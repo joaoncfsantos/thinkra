@@ -12,7 +12,7 @@ A speech-to-text application that helps you record daily gains and set goals for
 1. Clone the repository
 
    ```bash
-   git clone <url>
+   git clone https://github.com/joaoncfsantos/gap-and-gain.git
    cd gap-and-gain
    ```
 

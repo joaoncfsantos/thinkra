@@ -4,14 +4,9 @@ import fs from "fs";
 import multer from "multer";
 import cors from "cors";
 
-import OpenAI, { toFile } from "openai";
-
-dotenv.config();
-
-if (!process.env.OPENAI_API_KEY) {
-  console.error("Missing OPENAI_API_KEY in server/.env");
-  process.exit(1);
-}
+import { toFile } from "openai";
+import supabase from "./utils/supabase";
+import openAiClient from "./utils/openai";
 
 const app = express();
 const port = 3000;
@@ -35,8 +30,6 @@ const upload = multer({
   },
 });
 
-const openAIClient = new OpenAI();
-
 app.use(express.json());
 app.use(cors({ origin: "http://localhost:5173" }));
 
@@ -44,7 +37,7 @@ app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
-    const transcription = await openAIClient.audio.transcriptions.create({
+    const transcription = await openAiClient.audio.transcriptions.create({
       file: await toFile(fs.createReadStream(req.file.path), "audio.webm"),
       model: "whisper-1",
       response_format: "text",
@@ -70,7 +63,7 @@ app.listen(port, () => {
 
 async function extractGapsAndGains(input: string) {
   try {
-    const completion = await openAIClient.chat.completions.create({
+    const completion = await openAiClient.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
@@ -90,5 +83,54 @@ async function extractGapsAndGains(input: string) {
   } catch (error) {
     console.error("Error extracting gaps and gains:", error);
     return { goals: [], gains: [], error: "Failed to extract information" };
+  }
+}
+
+app.get("/api/daily-entry", async (req, res) => {
+  try {
+    const entries = await getDailyEntries();
+
+    if (!Array.isArray(entries)) {
+      console.log("Entries is not an array, returning 500");
+      return res.status(500).json(entries);
+    }
+
+    console.log("Sending entries:", entries);
+    res.json(entries);
+  } catch (err: any) {
+    console.error("Get entries error:", err.message);
+    res.status(500).json({ error: "Failed to fetch entries" });
+  }
+});
+
+async function saveDailyEntry(date: string, goals: string[], gains: string[]) {
+  try {
+    const { data, error } = await supabase.from("daily_entries").insert({
+      date,
+      goals,
+      gains,
+    });
+  } catch (error) {
+    console.error("Error saving daily entry:", error);
+    return { error: "Failed to save daily entry" };
+  }
+}
+
+async function getDailyEntries() {
+  try {
+    const { data, error } = await supabase
+      .from("daily_entries")
+      .select("*")
+      .order("date", { ascending: false });
+
+    if (error) {
+      console.error("Supabase error:", error);
+      return { error: "Failed to get daily entries" };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error getting daily entries:", error);
+    return { error: "Failed to get daily entries" };
   }
 }

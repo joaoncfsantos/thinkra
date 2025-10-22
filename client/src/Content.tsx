@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { AudioRecorder } from "./components/AudioRecorder";
 import { DailyCard } from "./components/DailyCard";
 
+import type { DailyEntry } from "./interfaces/DailyEntry";
+
 function Content() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [transcribedText, setTranscribedText] = useState<string>("");
@@ -12,22 +14,33 @@ function Content() {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [error, setError] = useState<string>("");
   const [recordingDate, setRecordingDate] = useState<string>("");
+  const [dailyEntries, setDailyEntries] = useState<DailyEntry[]>([]);
 
-  // Add mock data for dev
   useEffect(() => {
-    setGapsAndGains({
-      goals: [
-        "Start working on the presentation for next week's client meeting",
-        "Call mom",
-        "Go to the gym",
-      ],
-      gains: [
-        "Had a great conversation with my colleague about the new project",
-        "Finished reading that book I've been working on for weeks",
-        "Took a nice walk in the park during lunch break with perfect weather",
-      ],
-    });
-    setRecordingDate(new Date().toLocaleDateString());
+    const fetchEntries = async () => {
+      try {
+        const API_URL = import.meta.env.VITE_API_URL;
+        console.log("Fetching from:", `${API_URL}/api/daily-entry`);
+
+        const response = await fetch(`${API_URL}/api/daily-entry`);
+        console.log("Response status:", response.status);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Fetched data:", data);
+        console.log("Data type:", typeof data);
+        console.log("Is array:", Array.isArray(data));
+
+        setDailyEntries(data as DailyEntry[]);
+      } catch (error) {
+        console.error("Failed to fetch entries:", error);
+      }
+    };
+
+    fetchEntries();
   }, []);
 
   const handleRecordingComplete = async (audioBlob: Blob) => {
@@ -95,11 +108,14 @@ function Content() {
           />
         )}
 
-        <DailyCard
-          date={recordingDate}
-          goals={gapsAndGains.goals}
-          gains={gapsAndGains.gains}
-        />
+        {dailyEntries.map((entry, index) => (
+          <DailyCard
+            key={entry.id || index}
+            date={entry.date}
+            goals={entry.goals}
+            gains={entry.gains}
+          />
+        ))}
       </div>
     </div>
   );

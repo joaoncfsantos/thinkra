@@ -1,11 +1,34 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AudioRecorder } from "./components/AudioRecorder";
+import { DailyCard } from "./components/DailyCard";
 
 function Content() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [transcribedText, setTranscribedText] = useState<string>("");
+  const [gapsAndGains, setGapsAndGains] = useState<{
+    goals: string[];
+    gains: string[];
+  }>({ goals: [], gains: [] });
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [error, setError] = useState<string>("");
+  const [recordingDate, setRecordingDate] = useState<string>("");
+
+  // Add mock data for dev
+  useEffect(() => {
+    setGapsAndGains({
+      goals: [
+        "Start working on the presentation for next week's client meeting",
+        "Call mom",
+        "Go to the gym",
+      ],
+      gains: [
+        "Had a great conversation with my colleague about the new project",
+        "Finished reading that book I've been working on for weeks",
+        "Took a nice walk in the park during lunch break with perfect weather",
+      ],
+    });
+    setRecordingDate(new Date().toLocaleDateString());
+  }, []);
 
   const handleRecordingComplete = async (audioBlob: Blob) => {
     const audioUrl = URL.createObjectURL(audioBlob);
@@ -16,6 +39,7 @@ function Content() {
     setIsTranscribing(true);
     setError("");
     setTranscribedText("");
+    setRecordingDate(new Date().toLocaleDateString());
 
     try {
       const fd = new FormData();
@@ -33,6 +57,7 @@ function Content() {
 
       const data = await r.json();
       setTranscribedText(data.text);
+      setGapsAndGains(data.result);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to transcribe audio"
@@ -63,14 +88,19 @@ function Content() {
         )}
 
         {transcribedText && (
-          <div className="text-gray-900 dark:text-gray-50 p-4 rounded-lg border">
-            <h3 className="font-semibold mb-2">Transcribed Text:</h3>
-            <p className="text-sm">{transcribedText}</p>
-          </div>
+          <DailyCard
+            date={recordingDate}
+            goals={gapsAndGains.goals}
+            gains={gapsAndGains.gains}
+          />
         )}
-      </div>
 
-      <audio ref={audioRef} controls className="mt-4" />
+        <DailyCard
+          date={recordingDate}
+          goals={gapsAndGains.goals}
+          gains={gapsAndGains.gains}
+        />
+      </div>
     </div>
   );
 }

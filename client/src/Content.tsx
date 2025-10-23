@@ -3,6 +3,7 @@ import { AudioRecorder } from "./components/AudioRecorder";
 import { DailyCard } from "./components/DailyCard";
 
 import type { DailyEntry } from "./interfaces/DailyEntry";
+import { Button } from "./components/ui/button";
 
 function Content() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -16,28 +17,28 @@ function Content() {
   const [recordingDate, setRecordingDate] = useState<string>("");
   const [dailyEntries, setDailyEntries] = useState<DailyEntry[]>([]);
 
-  useEffect(() => {
-    const fetchEntries = async () => {
-      try {
-        const API_URL = import.meta.env.VITE_API_URL;
-        console.log("Fetching from:", `${API_URL}/api/daily-entry`);
+  const fetchEntries = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL;
+      console.log("Fetching from:", `${API_URL}/api/daily-entry`);
 
-        const response = await fetch(`${API_URL}/api/daily-entry`);
-        console.log("Response status:", response.status);
+      const response = await fetch(`${API_URL}/api/daily-entry`);
+      console.log("Response status:", response.status);
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log("Fetched data:", data);
-
-        setDailyEntries(data as DailyEntry[]);
-      } catch (error) {
-        console.error("Failed to fetch entries:", error);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    };
 
+      const data = await response.json();
+      console.log("Fetched data:", data);
+
+      setDailyEntries(data as DailyEntry[]);
+    } catch (error) {
+      console.error("Failed to fetch entries:", error);
+    }
+  };
+
+  useEffect(() => {
     fetchEntries();
   }, []);
 
@@ -78,12 +79,39 @@ function Content() {
     }
   };
 
+  const handleCreateDailyEntry = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${API_URL}/api/daily-entry`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          date: new Date(),
+          goals: ["test goal 1", "test goal 2", "test goal 3"],
+          gains: ["test gain 1", "test gain 2", "test gain 3"],
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log("Created entry:", data);
+      await fetchEntries();
+    } catch (error) {
+      console.error("Failed to create entry:", error);
+    }
+  };
+
   return (
     <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">
       <AudioRecorder
         onRecordingComplete={handleRecordingComplete}
         className="mb-4"
       />
+
+      <Button onClick={handleCreateDailyEntry}>Create Entry</Button>
 
       <div className="w-full max-w-2xl">
         {isTranscribing && (
@@ -99,20 +127,21 @@ function Content() {
         )}
 
         {transcribedText && (
-          <DailyCard
-            date={recordingDate}
-            goals={gapsAndGains.goals}
-            gains={gapsAndGains.gains}
-          />
+          <div className="text-center text-muted-foreground">
+            <p>Transcribed text:</p>
+            <p>{transcribedText}</p>
+          </div>
         )}
 
         {dailyEntries.map((entry, index) => (
-          <DailyCard
-            key={entry.id || index}
-            date={entry.date}
-            goals={entry.goals}
-            gains={entry.gains}
-          />
+          <div className="mb-4">
+            <DailyCard
+              key={entry.id || index}
+              date={entry.date}
+              goals={entry.goals}
+              gains={entry.gains}
+            />
+          </div>
         ))}
       </div>
     </div>

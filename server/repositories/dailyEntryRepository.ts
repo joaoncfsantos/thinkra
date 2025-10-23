@@ -14,7 +14,7 @@ export async function getDailyEntries() {
   return data;
 }
 
-export async function saveDailyEntry(
+export async function createDailyEntry(
   date: string,
   goals: string[],
   gains: string[]

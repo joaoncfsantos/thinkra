@@ -31,8 +31,6 @@ function Content() {
 
         const data = await response.json();
         console.log("Fetched data:", data);
-        console.log("Data type:", typeof data);
-        console.log("Is array:", Array.isArray(data));
 
         setDailyEntries(data as DailyEntry[]);
       } catch (error) {

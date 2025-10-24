@@ -3,7 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
-import { Plus } from "lucide-react";
+import { Calendar } from "./ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Plus, CalendarIcon } from "lucide-react";
 
 interface EntryFormModalProps {
   open: boolean;
@@ -11,19 +13,44 @@ interface EntryFormModalProps {
   onSubmit: (data: { date: string; goals: string[]; gains: string[] }) => void;
 }
 
+function formatDate(date: Date | undefined) {
+  if (!date) {
+    return "";
+  }
+
+  return date.toLocaleDateString("en-US", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function isValidDate(date: Date | undefined) {
+  if (!date) {
+    return false;
+  }
+  return !isNaN(date.getTime());
+}
+
 export const EntryFormModal: React.FC<EntryFormModalProps> = ({
   open,
   onOpenChange,
   onSubmit,
 }) => {
-  const [date, setDate] = useState(() => {
-    const today = new Date();
-    return today.toISOString().split("T")[0];
-  });
+  // Date picker state
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date()
+  );
+  const [month, setMonth] = useState<Date | undefined>(selectedDate);
+  const [dateValue, setDateValue] = useState(formatDate(selectedDate));
+
+  // Form state
   const [goals, setGoals] = useState<string[]>([""]);
   const [gains, setGains] = useState<string[]>([""]);
   const [errors, setErrors] = useState<{ goals?: string; gains?: string }>({});
 
+  // ... existing functions (addGoal, removeGoal, updateGoal, addGain, removeGain, updateGain, validateForm) ...
   const addGoal = () => {
     setGoals([...goals, ""]);
   };
@@ -84,14 +111,22 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
     const validGoals = goals.filter((goal) => goal.trim() !== "");
     const validGains = gains.filter((gain) => gain.trim() !== "");
 
+    // Convert selected date to ISO string format for consistency
+    const dateString = selectedDate
+      ? selectedDate.toISOString().split("T")[0]
+      : new Date().toISOString().split("T")[0];
+
     onSubmit({
-      date,
+      date: dateString,
       goals: validGoals,
       gains: validGains,
     });
 
     // Reset form
-    setDate(new Date().toISOString().split("T")[0]);
+    const today = new Date();
+    setSelectedDate(today);
+    setMonth(today);
+    setDateValue(formatDate(today));
     setGoals([""]);
     setGains([""]);
     setErrors({});
@@ -100,7 +135,10 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
 
   const handleCancel = () => {
     // Reset form
-    setDate(new Date().toISOString().split("T")[0]);
+    const today = new Date();
+    setSelectedDate(today);
+    setMonth(today);
+    setDateValue(formatDate(today));
     setGoals([""]);
     setGains([""]);
     setErrors({});
@@ -111,29 +149,77 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl w-[95vw] max-h-[50vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            <p className="text-neutral-900 dark:text-white">Create New Entry</p>
-          </DialogTitle>
+          <div className="flex justify-between items-center">
+            <DialogTitle>
+              <p className="text-2xl text-neutral-900 dark:text-white">
+                Create New Entry
+              </p>
+            </DialogTitle>
+
+            {/* Enhanced Date Picker */}
+            <div className="flex flex-col gap-3">
+              <div className="relative flex gap-2">
+                <Input
+                  id="date"
+                  value={dateValue}
+                  placeholder="June 01, 2025"
+                  className="bg-background pr-10 border-none  text-neutral-900 dark:text-white"
+                  onChange={(e) => {
+                    const date = new Date(e.target.value);
+                    setDateValue(e.target.value);
+                    if (isValidDate(date)) {
+                      setSelectedDate(date);
+                      setMonth(date);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "ArrowDown") {
+                      e.preventDefault();
+                      setDatePickerOpen(true);
+                    }
+                  }}
+                />
+                <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="date-picker"
+                      variant="ghost"
+                      className="absolute top-1/2 right-2 size-6 -translate-y-1/2 text-neutral-900 dark:text-neutral-50"
+                    >
+                      <CalendarIcon className="size-3.5" />
+                      <span className="sr-only">Select date</span>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-auto overflow-hidden p-0"
+                    align="end"
+                    alignOffset={-8}
+                    sideOffset={10}
+                  >
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      captionLayout="dropdown"
+                      month={month}
+                      onMonthChange={setMonth}
+                      onSelect={(date) => {
+                        setSelectedDate(date);
+                        setDateValue(formatDate(date));
+                        setDatePickerOpen(false);
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          </div>
         </DialogHeader>
 
+        {/* ... rest of the form remains the same ... */}
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-6 text-neutral-900 dark:text-white "
+          className="flex flex-col gap-4 text-neutral-900 dark:text-white "
         >
-          {/* Date Picker */}
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="date" className="text-neutral-900 dark:text-white">
-              Date
-            </Label>
-            <Input
-              id="date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
-          </div>
-
           {/* Goals Section */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">

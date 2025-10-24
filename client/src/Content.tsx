@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AudioRecorder } from "./components/AudioRecorder";
 import { DailyCard } from "./components/DailyCard";
+import { EntryFormModal } from "./components/EntryFormModal";
 
 import type { DailyEntry } from "./interfaces/DailyEntry";
 import { Button } from "./components/ui/button";
@@ -16,6 +17,7 @@ function Content() {
   const [error, setError] = useState<string>("");
   const [recordingDate, setRecordingDate] = useState<string>("");
   const [dailyEntries, setDailyEntries] = useState<DailyEntry[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   const fetchEntries = async () => {
     try {
@@ -79,7 +81,11 @@ function Content() {
     }
   };
 
-  const handleCreateDailyEntry = async () => {
+  const handleCreateDailyEntry = async (formData: {
+    date: string;
+    goals: string[];
+    gains: string[];
+  }) => {
     try {
       const API_URL = import.meta.env.VITE_API_URL;
       const response = await fetch(`${API_URL}/api/daily-entry`, {
@@ -88,9 +94,9 @@ function Content() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          date: new Date(),
-          goals: ["test goal 1", "test goal 2", "test goal 3"],
-          gains: ["test gain 1", "test gain 2", "test gain 3"],
+          date: new Date(formData.date),
+          goals: formData.goals,
+          gains: formData.gains,
         }),
       });
       if (!response.ok) {
@@ -111,7 +117,13 @@ function Content() {
         className="mb-4"
       />
 
-      <Button onClick={handleCreateDailyEntry}>Create Entry</Button>
+      <Button onClick={() => setIsModalOpen(true)}>Create Entry</Button>
+
+      <EntryFormModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        onSubmit={handleCreateDailyEntry}
+      />
 
       <div className="w-full max-w-2xl">
         {isTranscribing && (

@@ -25,17 +25,14 @@ function Content() {
   const fetchEntries = async () => {
     try {
       const API_URL = import.meta.env.VITE_API_URL;
-      console.log("Fetching from:", `${API_URL}/api/daily-entry`);
 
       const response = await fetch(`${API_URL}/api/daily-entry`);
-      console.log("Response status:", response.status);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("Fetched data:", data);
 
       setDailyEntries(data as DailyEntry[]);
     } catch (error) {
@@ -105,15 +102,13 @@ function Content() {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data = await response.json();
-      console.log("Created entry:", data);
+      //const data = await response.json();
       await fetchEntries();
     } catch (error) {
       console.error("Failed to create entry:", error);
     }
   };
 
-  // Replace your handleDeleteDailyEntry function with this:
   const handleDeleteRequest = (id: string) => {
     setEntryToDelete(id);
     setDeleteModalOpen(true);
@@ -169,10 +164,7 @@ function Content() {
       const result = await response.json();
 
       if (result.modified) {
-        console.log("Entry updated:", result.data);
         await fetchEntries();
-      } else {
-        console.log("No changes detected:", result.message);
       }
 
       return result;

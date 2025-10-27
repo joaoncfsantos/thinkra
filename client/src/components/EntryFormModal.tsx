@@ -5,7 +5,7 @@ import { Label } from "./ui/label";
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Plus, CalendarIcon } from "lucide-react";
+import { Plus, CalendarIcon, X } from "lucide-react";
 
 interface EntryFormModalProps {
   open: boolean;
@@ -20,7 +20,7 @@ function formatDate(date: Date | undefined) {
 
   return date.toLocaleDateString("en-US", {
     day: "2-digit",
-    month: "long",
+    month: "short",
     year: "numeric",
   });
 }
@@ -147,22 +147,22 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl w-[95vw] max-h-[50vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl w-[90vw]  max-h-[50vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex justify-between items-center">
-            <DialogTitle>
-              <p className="text-2xl text-neutral-900 dark:text-white">
-                Create New Entry
-              </p>
-            </DialogTitle>
-
-            {/* Enhanced Date Picker */}
-            <div className="flex flex-col gap-3">
-              <div className="relative flex gap-2">
+            <div className="flex-1">
+              <DialogTitle>
+                <p className="text-2xl text-neutral-900 dark:text-white">
+                  New Entry
+                </p>
+              </DialogTitle>
+            </div>
+            {/* Date Picker */}
+            <div className="flex flex-1 flex-col gap-3 max-w-xs">
+              <div className="relative flex gap-2 w-full">
                 <Input
                   id="date"
                   value={dateValue}
-                  placeholder="June 01, 2025"
                   className="bg-background pr-10 border-none  text-neutral-900 dark:text-white"
                   onChange={(e) => {
                     const date = new Date(e.target.value);
@@ -178,15 +178,20 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
                       setDatePickerOpen(true);
                     }
                   }}
+                  onClick={() => setDatePickerOpen(true)}
                 />
                 <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       id="date-picker"
                       variant="ghost"
-                      className="absolute top-1/2 right-2 size-6 -translate-y-1/2 text-neutral-900 dark:text-neutral-50"
+                      className="absolute top-1/2 right-2 size-6 -translate-y-1/2 text-neutral-900 dark:text-neutral-50 "
                     >
-                      <CalendarIcon className="size-3.5" />
+                      {datePickerOpen ? (
+                        <X className="size-3.5" />
+                      ) : (
+                        <CalendarIcon className="size-3.5" />
+                      )}
                       <span className="sr-only">Select date</span>
                     </Button>
                   </PopoverTrigger>
@@ -215,7 +220,6 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
           </div>
         </DialogHeader>
 
-        {/* ... rest of the form remains the same ... */}
         <form
           onSubmit={handleSubmit}
           className="flex flex-col gap-4 text-neutral-900 dark:text-white "

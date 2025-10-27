@@ -112,12 +112,11 @@ function Content() {
 
   return (
     <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">
-      <AudioRecorder
-        onRecordingComplete={handleRecordingComplete}
-        className="mb-4"
-      />
-
-      <Button onClick={() => setIsModalOpen(true)}>Create Entry</Button>
+      <div className="flex flex-row items-center justify-center gap-4">
+        <Button onClick={() => setIsModalOpen(true)}>Create Entry</Button>
+        <p className="text-muted-foreground">or</p>
+        <AudioRecorder onRecordingComplete={handleRecordingComplete} />
+      </div>
 
       <EntryFormModal
         open={isModalOpen}

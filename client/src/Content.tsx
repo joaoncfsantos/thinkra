@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AudioRecorder } from "./components/AudioRecorder";
 import { DailyCard } from "./components/DailyCard";
 import { EntryFormModal } from "./components/EntryFormModal";
+import { ConfirmationModal } from "./components/DeleteConfirmationModal";
 
 import type { DailyEntry } from "./interfaces/DailyEntry";
 import { Button } from "./components/ui/button";
@@ -18,6 +19,8 @@ function Content() {
   const [recordingDate, setRecordingDate] = useState<string>("");
   const [dailyEntries, setDailyEntries] = useState<DailyEntry[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
 
   const fetchEntries = async () => {
     try {
@@ -110,18 +113,31 @@ function Content() {
     }
   };
 
-  const handleDeleteDailyEntry = async (id: string) => {
+  // Replace your handleDeleteDailyEntry function with this:
+  const handleDeleteRequest = (id: string) => {
+    setEntryToDelete(id);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!entryToDelete) return;
+
     try {
       const API_URL = import.meta.env.VITE_API_URL;
-      const response = await fetch(`${API_URL}/api/daily-entry/${id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `${API_URL}/api/daily-entry/${entryToDelete}`,
+        {
+          method: "DELETE",
+        }
+      );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       await fetchEntries();
     } catch (error) {
       console.error("Failed to delete entry:", error);
+    } finally {
+      setEntryToDelete(null);
     }
   };
 
@@ -167,11 +183,19 @@ function Content() {
               goals={entry.goals}
               gains={entry.gains}
               id={entry.id}
-              onDelete={handleDeleteDailyEntry}
+              onDelete={handleDeleteRequest}
             />
           </div>
         ))}
       </div>
+
+      <ConfirmationModal
+        open={deleteModalOpen}
+        onOpenChange={setDeleteModalOpen}
+        onConfirm={handleConfirmDelete}
+        title="Delete Entry"
+        message="Are you sure you want to delete this entry?"
+      />
     </div>
   );
 }

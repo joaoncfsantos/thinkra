@@ -257,6 +257,7 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
             </div>
             <div className="flex justify-center">
               <Button
+                type="button"
                 variant="outline"
                 size="icon"
                 className="rounded-full"
@@ -302,6 +303,7 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
                 variant="outline"
                 size="icon"
                 className="rounded-full"
+                type="button"
                 onClick={addGain}
               >
                 <Plus />

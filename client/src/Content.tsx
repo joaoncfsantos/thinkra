@@ -141,6 +141,47 @@ function Content() {
     }
   };
 
+  const handleUpdateDailyEntry = async (
+    id: string,
+    newGoals: string[],
+    newGains: string[]
+  ) => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${API_URL}/api/daily-entry/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          goals: newGoals,
+          gains: newGains,
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error("Entry not found");
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.modified) {
+        console.log("Entry updated:", result.data);
+        await fetchEntries();
+      } else {
+        console.log("No changes detected:", result.message);
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Failed to update entry:", error);
+      throw error;
+    }
+  };
+
   return (
     <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">
       <div className="flex flex-row items-center justify-center gap-4">
@@ -175,15 +216,17 @@ function Content() {
           </div>
         )}
 
-        {dailyEntries.map((entry, index) => (
-          <div className="mb-4">
+        {dailyEntries.map((entry) => (
+          <div className="mb-4" key={entry.id}>
             <DailyCard
-              key={entry.id}
               date={entry.date}
               goals={entry.goals}
               gains={entry.gains}
               id={entry.id}
               onDelete={handleDeleteRequest}
+              onUpdate={(newGoals, newGains) =>
+                handleUpdateDailyEntry(entry.id, newGoals, newGains)
+              }
             />
           </div>
         ))}

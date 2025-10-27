@@ -3,6 +3,7 @@ import {
   createDailyEntry,
   deleteDailyEntry,
   getDailyEntries,
+  updateDailyEntry,
 } from "../repositories/dailyEntryRepository";
 
 const router = express.Router();
@@ -44,4 +45,42 @@ router.delete("/daily-entry/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to delete entry" });
   }
 });
+
+router.put("/daily-entry/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { goals, gains } = req.body;
+
+    if (!Array.isArray(goals) || !Array.isArray(gains)) {
+      return res.status(400).json({
+        error: "Goals and gains must be arrays",
+      });
+    }
+
+    const result = await updateDailyEntry(id, goals, gains);
+
+    if (result.modified) {
+      res.json({
+        data: result.data,
+        message: result.message,
+        modified: true,
+      });
+    } else {
+      res.status(200).json({
+        data: result.data,
+        message: result.message,
+        modified: false,
+      });
+    }
+  } catch (err: any) {
+    console.error("Update entry error:", err.message);
+
+    if (err.message === "Entry not found") {
+      return res.status(404).json({ error: err.message });
+    }
+
+    res.status(500).json({ error: "Failed to update entry" });
+  }
+});
+
 export default router;

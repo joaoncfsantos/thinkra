@@ -23,7 +23,7 @@ export function DailyCard({
     setIsEditing(false);
     // Call the onUpdate callback to save changes to parent component
     if (onUpdate) {
-      onUpdate(date, editableGoals, editableGains);
+      onUpdate(editableGoals, editableGains);
     }
   };
 
@@ -209,6 +209,6 @@ interface DailyCardProps {
   date: string;
   goals: string[];
   gains: string[];
-  onUpdate?: (date: string, goals: string[], gains: string[]) => void;
+  onUpdate?: (goals: string[], gains: string[]) => void;
   onDelete?: (id: string) => void;
 }

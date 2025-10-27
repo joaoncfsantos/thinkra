@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createDailyEntry,
+  deleteDailyEntry,
   getDailyEntries,
 } from "../repositories/dailyEntryRepository";
 
@@ -15,7 +16,6 @@ router.get("/daily-entry", async (req, res) => {
       return res.status(500).json(entries);
     }
 
-    console.log("Sending entries:", entries);
     res.json(entries);
   } catch (err: any) {
     console.error("Get entries error:", err.message);
@@ -31,6 +31,17 @@ router.post("/daily-entry", async (req, res) => {
   } catch (err: any) {
     console.error("Create entry error:", err.message);
     res.status(500).json({ error: "Failed to create entry" });
+  }
+});
+
+router.delete("/daily-entry/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const entry = await deleteDailyEntry(id);
+    res.json(entry);
+  } catch (err: any) {
+    console.error("Delete entry error:", err.message);
+    res.status(500).json({ error: "Failed to delete entry" });
   }
 });
 export default router;

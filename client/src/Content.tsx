@@ -110,6 +110,21 @@ function Content() {
     }
   };
 
+  const handleDeleteDailyEntry = async (id: string) => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${API_URL}/api/daily-entry/${id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      await fetchEntries();
+    } catch (error) {
+      console.error("Failed to delete entry:", error);
+    }
+  };
+
   return (
     <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">
       <div className="flex flex-row items-center justify-center gap-4">
@@ -147,10 +162,12 @@ function Content() {
         {dailyEntries.map((entry, index) => (
           <div className="mb-4">
             <DailyCard
-              key={entry.id || index}
+              key={entry.id}
               date={entry.date}
               goals={entry.goals}
               gains={entry.gains}
+              id={entry.id}
+              onDelete={handleDeleteDailyEntry}
             />
           </div>
         ))}

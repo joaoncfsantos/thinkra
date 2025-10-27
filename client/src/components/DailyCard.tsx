@@ -3,7 +3,14 @@ import { Edit, Save, X, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
-export function DailyCard({ date, goals, gains, onUpdate }: DailyCardProps) {
+export function DailyCard({
+  id,
+  date,
+  goals,
+  gains,
+  onUpdate,
+  onDelete,
+}: DailyCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editableGoals, setEditableGoals] = useState(goals);
   const [editableGains, setEditableGains] = useState(gains);
@@ -80,14 +87,24 @@ export function DailyCard({ date, goals, gains, onUpdate }: DailyCardProps) {
               </Button>
             </>
           ) : (
-            <Button
-              onClick={handleEdit}
-              variant="outline"
-              className="cursor-pointer"
-              size="icon"
-            >
-              <Edit className="w-4 h-4" />
-            </Button>
+            <>
+              <Button
+                onClick={handleEdit}
+                variant="outline"
+                className="cursor-pointer"
+                size="icon"
+              >
+                <Edit className="w-4 h-4" />
+              </Button>
+              <Button
+                onClick={() => onDelete?.(id)}
+                variant="outline"
+                size="icon"
+                className="text-red-600 hover:text-red-700"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </>
           )}
         </div>
       </CardHeader>
@@ -188,8 +205,10 @@ export function DailyCard({ date, goals, gains, onUpdate }: DailyCardProps) {
 }
 
 interface DailyCardProps {
+  id: string;
   date: string;
   goals: string[];
   gains: string[];
   onUpdate?: (date: string, goals: string[], gains: string[]) => void;
+  onDelete?: (id: string) => void;
 }

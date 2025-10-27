@@ -32,3 +32,17 @@ export async function createDailyEntry(
 
   return data;
 }
+
+export async function deleteDailyEntry(id: string) {
+  const { data, error } = await supabase
+    .from("daily_entries")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.error("Error deleting daily entry:", error);
+    throw new Error(`Failed to delete daily entry: ${error.message}`);
+  }
+
+  return data;
+}

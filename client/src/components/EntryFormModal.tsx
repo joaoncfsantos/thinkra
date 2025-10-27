@@ -241,17 +241,17 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
                     value={goal}
                     onChange={(e) => updateGoal(index, e.target.value)}
                   />
-                  {goals.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeGoal(index)}
-                      className="px-2"
-                    >
-                      ×
-                    </Button>
-                  )}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => removeGoal(index)}
+                    className="px-2"
+                    disabled={goals.length === 1}
+                  >
+                    <X className="size-3.5" />
+                  </Button>
                 </div>
               ))}
             </div>
@@ -284,17 +284,18 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
                     value={gain}
                     onChange={(e) => updateGain(index, e.target.value)}
                   />
-                  {gains.length > 1 && (
+                  {
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
                       onClick={() => removeGain(index)}
                       className="px-2"
+                      disabled={gains.length === 1}
                     >
-                      ×
+                      <X className="size-3.5" />
                     </Button>
-                  )}
+                  }
                 </div>
               ))}
             </div>

@@ -1,62 +1,210 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "./ui/button";
 import { Mic, Square } from "lucide-react";
 
+// Configuration constants
+const AUDIO_CONFIG = {
+  FFT_SIZE: 2048,
+  SMOOTHING_TIME_CONSTANT: 0.6,
+  VOLUME_AMPLIFICATION: 2,
+  NOISE_THRESHOLD: 2,
+  SMOOTHING_FACTOR: 0.8,
+} as const;
+
+const DEFAULT_CIRCLE_CONFIG = {
+  MIN_SIZE: 100,
+  MAX_SIZE: 300,
+  COLOR: "bg-white",
+  TRANSITION_DURATION: "duration-200",
+} as const;
+
 interface AudioRecorderProps {
   onRecordingComplete?: (audioBlob: Blob) => void;
+  onVolumeChange?: (volume: number) => void;
   className?: string;
+  minCircleSize?: number;
+  maxCircleSize?: number;
+  circleColor?: string;
+}
+
+interface AudioRefs {
+  mediaRecorder: React.MutableRefObject<MediaRecorder | null>;
+  audioContext: React.MutableRefObject<AudioContext | null>;
+  analyser: React.MutableRefObject<AnalyserNode | null>;
+  animationFrame: React.MutableRefObject<number | null>;
+  isRecording: React.MutableRefObject<boolean>;
 }
 
 export function AudioRecorder({
   onRecordingComplete,
+  onVolumeChange,
   className,
+  minCircleSize = DEFAULT_CIRCLE_CONFIG.MIN_SIZE,
+  maxCircleSize = DEFAULT_CIRCLE_CONFIG.MAX_SIZE,
+  circleColor = DEFAULT_CIRCLE_CONFIG.COLOR,
 }: AudioRecorderProps) {
+  // State
   const [isRecording, setIsRecording] = useState(false);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const [volume, setVolume] = useState(0);
+  const [smoothedVolume, setSmoothedVolume] = useState(0);
 
-  const startRecording = async () => {
+  // Refs
+  const refs: AudioRefs = {
+    mediaRecorder: useRef<MediaRecorder | null>(null),
+    audioContext: useRef<AudioContext | null>(null),
+    analyser: useRef<AnalyserNode | null>(null),
+    animationFrame: useRef<number | null>(null),
+    isRecording: useRef(false),
+  };
+
+  // Computed values
+  const circleSize =
+    minCircleSize + (smoothedVolume / 100) * (maxCircleSize - minCircleSize);
+
+  // Volume smoothing effect
+  useEffect(() => {
+    const targetVolume = volume * AUDIO_CONFIG.VOLUME_AMPLIFICATION;
+    setSmoothedVolume(
+      (prev) => prev + (targetVolume - prev) * AUDIO_CONFIG.SMOOTHING_FACTOR
+    );
+  }, [volume]);
+
+  // Audio analysis function
+  const analyzeAudio = useCallback(() => {
+    if (!refs.analyser.current || !refs.isRecording.current) {
+      return;
+    }
+
+    const analyser = refs.analyser.current;
+    const bufferLength = analyser.fftSize;
+    const dataArray = new Uint8Array(bufferLength);
+
+    analyser.getByteTimeDomainData(dataArray);
+
+    // Calculate RMS for volume level
+    const rms = calculateRMS(dataArray);
+    let volumeLevel = Math.min(100, rms * 100);
+
+    // Apply noise gate
+    if (volumeLevel < AUDIO_CONFIG.NOISE_THRESHOLD) {
+      volumeLevel = 0;
+    }
+
+    setVolume(volumeLevel);
+    onVolumeChange?.(volumeLevel);
+
+    // Continue analysis loop
+    if (refs.isRecording.current) {
+      refs.animationFrame.current = requestAnimationFrame(analyzeAudio);
+    }
+  }, [onVolumeChange]);
+
+  // Helper function to calculate RMS
+  const calculateRMS = (dataArray: Uint8Array): number => {
+    let sum = 0;
+    for (let i = 0; i < dataArray.length; i++) {
+      const sample = (dataArray[i] - 128) / 128; // Convert to -1 to 1 range
+      sum += sample * sample;
+    }
+    return Math.sqrt(sum / dataArray.length);
+  };
+
+  // Setup audio context and analyser
+  const setupAudioAnalysis = async (stream: MediaStream): Promise<void> => {
+    const AudioContextClass =
+      window.AudioContext || (window as any).webkitAudioContext;
+
+    refs.audioContext.current = new AudioContextClass();
+
+    // Resume context if suspended
+    if (refs.audioContext.current.state === "suspended") {
+      await refs.audioContext.current.resume();
+    }
+
+    const source = refs.audioContext.current.createMediaStreamSource(stream);
+    refs.analyser.current = refs.audioContext.current.createAnalyser();
+
+    // Configure analyser
+    refs.analyser.current.fftSize = AUDIO_CONFIG.FFT_SIZE;
+    refs.analyser.current.smoothingTimeConstant =
+      AUDIO_CONFIG.SMOOTHING_TIME_CONSTANT;
+
+    source.connect(refs.analyser.current);
+  };
+
+  // Setup media recorder
+  const setupMediaRecorder = (stream: MediaStream): MediaRecorder => {
+    const mediaRecorder = new MediaRecorder(stream, {
+      mimeType: "audio/webm;codecs=opus",
+    });
+
+    const chunks: Blob[] = [];
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        chunks.push(event.data);
+      }
+    };
+
+    mediaRecorder.onstop = () => {
+      const audioBlob = new Blob(chunks, { type: mediaRecorder.mimeType });
+      onRecordingComplete?.(audioBlob);
+      cleanup(stream);
+    };
+
+    return mediaRecorder;
+  };
+
+  // Cleanup function
+  const cleanup = (stream?: MediaStream) => {
+    // Stop media tracks
+    stream?.getTracks().forEach((track) => track.stop());
+
+    // Close audio context
+    if (refs.audioContext.current) {
+      refs.audioContext.current.close();
+    }
+
+    // Cancel animation frame
+    if (refs.animationFrame.current) {
+      cancelAnimationFrame(refs.animationFrame.current);
+    }
+
+    // Reset state
+    setVolume(0);
+    setSmoothedVolume(0);
+    refs.isRecording.current = false;
+  };
+
+  // Start recording
+  const startRecording = async (): Promise<void> => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: "audio/webm;codecs=opus", // or 'audio/mp4' if supported
-      });
-      mediaRecorderRef.current = mediaRecorder;
 
-      const chunks: Blob[] = [];
+      await setupAudioAnalysis(stream);
+      refs.mediaRecorder.current = setupMediaRecorder(stream);
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          chunks.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(chunks, { type: mediaRecorder.mimeType });
-
-        // Call the callback with the audio blob
-        if (onRecordingComplete) {
-          onRecordingComplete(audioBlob);
-        }
-
-        // Stop all tracks to release microphone
-        stream.getTracks().forEach((track) => track.stop());
-      };
-
-      mediaRecorder.start();
+      // Start recording and analysis
+      refs.mediaRecorder.current.start();
       setIsRecording(true);
+      refs.isRecording.current = true;
+      analyzeAudio();
     } catch (error) {
       console.error("Error accessing microphone:", error);
     }
   };
 
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
+  // Stop recording
+  const stopRecording = (): void => {
+    if (refs.mediaRecorder.current && isRecording) {
+      refs.isRecording.current = false;
+      refs.mediaRecorder.current.stop();
       setIsRecording(false);
     }
   };
 
-  const handleRecordClick = () => {
+  // Toggle recording
+  const handleRecordClick = (): void => {
     if (isRecording) {
       stopRecording();
     } else {
@@ -64,24 +212,49 @@ export function AudioRecorder({
     }
   };
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      refs.isRecording.current = false;
+      cleanup();
+    };
+  }, []);
+
   return (
-    <div
-      className={`flex flex-col items-center justify-center space-y-4 ${
-        className || ""
-      }`}
-    >
-      <Button
-        onClick={handleRecordClick}
-        variant={isRecording ? "destructive" : "default"}
-        size="icon"
-        className="w-10 h-10 rounded-full"
+    <div className="relative w-full h-full flex items-center justify-center">
+      {/* Volume-responsive circle */}
+      {isRecording && (
+        <div
+          className={`absolute rounded-full ${circleColor} transition-all ${DEFAULT_CIRCLE_CONFIG.TRANSITION_DURATION} ease-out shadow-lg`}
+          style={{
+            width: `${circleSize}px`,
+            height: `${circleSize}px`,
+            transform: "translate(-50%, -50%)",
+            left: "50%",
+            top: "50%",
+          }}
+        />
+      )}
+
+      {/* Recording controls */}
+      <div
+        className={`relative z-10 flex flex-col items-center justify-center space-y-4 ${
+          className || ""
+        }`}
       >
-        {isRecording ? (
-          <Square className="w-4 h-4" />
-        ) : (
-          <Mic className="w-4 h-4" />
-        )}
-      </Button>
+        <Button
+          onClick={handleRecordClick}
+          variant={isRecording ? "destructive" : "default"}
+          size="icon"
+          className="w-12 h-12 rounded-full shadow-lg"
+        >
+          {isRecording ? (
+            <Square className="w-5 h-5" />
+          ) : (
+            <Mic className="w-5 h-5" />
+          )}
+        </Button>
+      </div>
     </div>
   );
 }

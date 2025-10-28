@@ -138,10 +138,9 @@ export function DailyCard({
                       onClick={() => removeGain(index)}
                       variant="outline"
                       size="icon-lg"
-                      className="text-red-600 hover:text-red-700 px-2"
                       disabled={editableGains.length === 1}
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <X className="w-3 h-3" />
                     </Button>
                   </>
                 ) : (
@@ -186,10 +185,9 @@ export function DailyCard({
                       onClick={() => removeGoal(index)}
                       variant="outline"
                       size="icon-lg"
-                      className="text-red-600 hover:text-red-700 px-2"
                       disabled={editableGoals.length === 1}
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <X className="w-3 h-3" />
                     </Button>
                   </>
                 ) : (

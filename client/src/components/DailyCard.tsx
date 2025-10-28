@@ -70,10 +70,16 @@ export function DailyCard({
     setEditableGains(editableGains.filter((_, i) => i !== index));
   };
 
+  const formattedDate = new Date(date).toLocaleDateString("en-US", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+
   return (
     <Card>
       <CardHeader className="flex justify-between items-center">
-        <CardTitle className="text-lg font-bold">{date}</CardTitle>
+        <CardTitle className="text-lg font-bold">{formattedDate}</CardTitle>
         <div className="flex gap-2">
           {isEditing ? (
             <>

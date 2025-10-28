@@ -9,14 +9,8 @@ import { Button } from "./components/ui/button";
 
 function Content() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [transcribedText, setTranscribedText] = useState<string>("");
-  const [gapsAndGains, setGapsAndGains] = useState<{
-    goals: string[];
-    gains: string[];
-  }>({ goals: [], gains: [] });
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [error, setError] = useState<string>("");
-  const [recordingDate, setRecordingDate] = useState<string>("");
   const [dailyEntries, setDailyEntries] = useState<DailyEntry[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -52,8 +46,6 @@ function Content() {
 
     setIsTranscribing(true);
     setError("");
-    setTranscribedText("");
-    setRecordingDate(new Date().toLocaleDateString());
 
     try {
       const fd = new FormData();
@@ -70,8 +62,6 @@ function Content() {
       }
 
       const data = await r.json();
-      setTranscribedText(data.text);
-      setGapsAndGains(data.result);
       handleCreateDailyEntry({
         date: new Date().toISOString().split("T")[0],
         goals: data.result.goals,
@@ -208,13 +198,6 @@ function Content() {
         {error && (
           <div className="text-center text-red-500 bg-red-50 dark:bg-red-950 p-4 rounded-lg">
             <p>Error: {error}</p>
-          </div>
-        )}
-
-        {transcribedText && (
-          <div className="text-center text-muted-foreground">
-            <p>Transcribed text:</p>
-            <p>{transcribedText}</p>
           </div>
         )}
 

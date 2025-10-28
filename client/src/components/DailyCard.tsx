@@ -23,8 +23,15 @@ export function DailyCard({
   const handleSave = () => {
     setIsEditing(false);
     // Call the onUpdate callback to save changes to parent component
+
+    //Clean empty goals and gains from the array
+    const cleanGoals = editableGoals.filter((goal) => goal.trim() !== "");
+    const cleanGains = editableGains.filter((gain) => gain.trim() !== "");
+
+    setEditableGoals(cleanGoals);
+    setEditableGains(cleanGains);
     if (onUpdate) {
-      onUpdate(editableGoals, editableGains);
+      onUpdate(cleanGoals, cleanGains);
     }
   };
 
@@ -126,6 +133,7 @@ export function DailyCard({
                       variant="outline"
                       size="icon-lg"
                       className="text-red-600 hover:text-red-700 px-2"
+                      disabled={editableGains.length === 1}
                     >
                       <Trash2 className="w-3 h-3" />
                     </Button>
@@ -173,6 +181,7 @@ export function DailyCard({
                       variant="outline"
                       size="icon-lg"
                       className="text-red-600 hover:text-red-700 px-2"
+                      disabled={editableGoals.length === 1}
                     >
                       <Trash2 className="w-3 h-3" />
                     </Button>

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Edit, Save, X, Trash2 } from "lucide-react";
+import { Edit, Save, X, Trash2, Plus, CornerUpLeft } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Input } from "./ui/input";
 
 export function DailyCard({
   id,
@@ -72,18 +73,18 @@ export function DailyCard({
               <Button
                 onClick={handleSave}
                 variant="outline"
-                size="icon"
-                className="text-green-600 hover:text-green-700"
+                size="icon-lg"
+                className="bg-green-600 text-white hover:bg-green-700 hover:text-white dark:bg-green-700 dark:hover:bg-green-800 dark:hover:text-white"
               >
                 <Save className="w-4 h-4" />
               </Button>
               <Button
                 onClick={handleCancel}
                 variant="outline"
-                size="icon"
+                size="icon-lg"
                 className="text-red-600 hover:text-red-700"
               >
-                <X className="w-4 h-4" />
+                <CornerUpLeft className="w-4 h-4" />
               </Button>
             </>
           ) : (
@@ -92,14 +93,14 @@ export function DailyCard({
                 onClick={handleEdit}
                 variant="outline"
                 className="cursor-pointer"
-                size="icon"
+                size="icon-lg"
               >
                 <Edit className="w-4 h-4" />
               </Button>
               <Button
                 onClick={() => onDelete?.(id)}
                 variant="outline"
-                size="icon"
+                size="icon-lg"
                 className="text-red-600 hover:text-red-700"
               >
                 <Trash2 className="w-4 h-4" />
@@ -113,33 +114,22 @@ export function DailyCard({
         <div className="mb-4">
           <div className="flex justify-between items-center mb-2">
             <h3 className="font-semibold">Gains:</h3>
-            {isEditing && (
-              <Button
-                onClick={addGain}
-                variant="outline"
-                size="sm"
-                className="text-xs"
-              >
-                Add Gain
-              </Button>
-            )}
           </div>
           <ol className="list-decimal list-inside space-y-1">
             {editableGains.map((gain, index) => (
               <li key={index} className="flex items-center gap-2">
                 {isEditing ? (
                   <>
-                    <input
-                      type="text"
+                    <Input
+                      placeholder={`Gain ${index + 1}`}
                       value={gain}
                       onChange={(e) => handleGainChange(index, e.target.value)}
-                      className="flex-1 border rounded px-2 py-1 text-sm"
-                      placeholder="Enter gain..."
+                      className="dark:border-neutral-700"
                     />
                     <Button
                       onClick={() => removeGain(index)}
                       variant="outline"
-                      size="sm"
+                      size="icon-lg"
                       className="text-red-600 hover:text-red-700 px-2"
                     >
                       <Trash2 className="w-3 h-3" />
@@ -152,39 +142,41 @@ export function DailyCard({
                 )}
               </li>
             ))}
+            {isEditing && (
+              <div className="flex justify-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="rounded-full"
+                  onClick={addGain}
+                >
+                  <Plus />
+                </Button>
+              </div>
+            )}
           </ol>
         </div>
 
         <div>
           <div className="flex justify-between items-center mb-2">
             <h3 className="font-semibold">Goals:</h3>
-            {isEditing && (
-              <Button
-                onClick={addGoal}
-                variant="outline"
-                size="sm"
-                className="text-xs"
-              >
-                Add Goal
-              </Button>
-            )}
           </div>
           <ol className="list-decimal list-inside space-y-1">
             {editableGoals.map((goal, index) => (
               <li key={index} className="flex items-center gap-2">
                 {isEditing ? (
                   <>
-                    <input
-                      type="text"
+                    <Input
+                      placeholder={`Gain ${index + 1}`}
                       value={goal}
                       onChange={(e) => handleGoalChange(index, e.target.value)}
-                      className="flex-1 border rounded px-2 py-1 text-sm"
-                      placeholder="Enter goal..."
+                      className="dark:border-neutral-700"
                     />
                     <Button
                       onClick={() => removeGoal(index)}
                       variant="outline"
-                      size="sm"
+                      size="icon-lg"
                       className="text-red-600 hover:text-red-700 px-2"
                     >
                       <Trash2 className="w-3 h-3" />
@@ -197,6 +189,19 @@ export function DailyCard({
                 )}
               </li>
             ))}
+            {isEditing && (
+              <div className="flex justify-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="rounded-full"
+                  onClick={addGoal}
+                >
+                  <Plus />
+                </Button>
+              </div>
+            )}
           </ol>
         </div>
       </CardContent>

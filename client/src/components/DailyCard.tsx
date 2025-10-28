@@ -15,12 +15,18 @@ export function DailyCard({
   const [isEditing, setIsEditing] = useState(false);
   const [editableGoals, setEditableGoals] = useState(goals);
   const [editableGains, setEditableGains] = useState(gains);
+  const [errors, setErrors] = useState<{ goals?: string; gains?: string }>({});
 
   const handleEdit = () => {
     setIsEditing(true);
   };
 
   const handleSave = () => {
+    const isValid = validateForm();
+    if (!isValid) {
+      return;
+    }
+
     setIsEditing(false);
     // Call the onUpdate callback to save changes to parent component
 
@@ -30,9 +36,31 @@ export function DailyCard({
 
     setEditableGoals(cleanGoals);
     setEditableGains(cleanGains);
+
+    // Clear errors on successful save
+    setErrors({});
+
     if (onUpdate) {
       onUpdate(cleanGoals, cleanGains);
     }
+  };
+
+  const validateForm = () => {
+    const newErrors: { goals?: string; gains?: string } = {};
+
+    const validGoals = editableGoals.filter((goal) => goal.trim() !== "");
+    const validGains = editableGains.filter((gain) => gain.trim() !== "");
+
+    if (validGoals.length === 0) {
+      newErrors.goals = "At least one goal is required";
+    }
+
+    if (validGains.length === 0) {
+      newErrors.gains = "At least one gain is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleCancel = () => {
@@ -40,6 +68,8 @@ export function DailyCard({
     // Reset to original values
     setEditableGoals(goals);
     setEditableGains(gains);
+    // Clear any validation errors
+    setErrors({});
   };
 
   const handleGoalChange = (index: number, value: string) => {
@@ -122,6 +152,9 @@ export function DailyCard({
         <div className="mb-4">
           <div className="flex justify-between items-center mb-2">
             <h3 className="font-semibold">Gains:</h3>
+            {errors.gains && (
+              <p className="text-sm text-red-500">{errors.gains}</p>
+            )}
           </div>
           <ol className="list-decimal list-inside space-y-1">
             {editableGains.map((gain, index) => (
@@ -169,6 +202,9 @@ export function DailyCard({
         <div>
           <div className="flex justify-between items-center mb-2">
             <h3 className="font-semibold">Goals:</h3>
+            {errors.goals && (
+              <p className="text-sm text-red-500">{errors.goals}</p>
+            )}
           </div>
           <ol className="list-decimal list-inside space-y-1">
             {editableGoals.map((goal, index) => (

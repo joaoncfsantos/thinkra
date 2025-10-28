@@ -44,7 +44,7 @@ function Content() {
     fetchEntries();
   }, []);
 
-  const handleRecordingComplete = async (audioBlob: Blob) => {
+  const handleAudioSubmission = async (audioBlob: Blob) => {
     const audioUrl = URL.createObjectURL(audioBlob);
     if (audioRef.current) {
       audioRef.current.src = audioUrl;
@@ -72,6 +72,11 @@ function Content() {
       const data = await r.json();
       setTranscribedText(data.text);
       setGapsAndGains(data.result);
+      handleCreateDailyEntry({
+        date: new Date().toISOString().split("T")[0],
+        goals: data.result.goals,
+        gains: data.result.gains,
+      });
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to transcribe audio"
@@ -88,13 +93,18 @@ function Content() {
   }) => {
     try {
       const API_URL = import.meta.env.VITE_API_URL;
+
+      const dateString = formData.date.includes("/")
+        ? new Date(formData.date).toISOString().split("T")[0]
+        : formData.date;
+
       const response = await fetch(`${API_URL}/api/daily-entry`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          date: new Date(formData.date),
+          date: dateString,
           goals: formData.goals,
           gains: formData.gains,
         }),
@@ -179,7 +189,7 @@ function Content() {
       <div className="flex flex-row items-center justify-center gap-4">
         <Button onClick={() => setIsModalOpen(true)}>Create Entry</Button>
         <p className="text-muted-foreground">or</p>
-        <AudioRecorder onRecordingComplete={handleRecordingComplete} />
+        <AudioRecorder onRecordingComplete={handleAudioSubmission} />
       </div>
 
       <EntryFormModal

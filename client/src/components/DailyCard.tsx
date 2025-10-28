@@ -70,6 +70,9 @@ export function DailyCard({
         <div className="flex gap-2">
           {isEditing ? (
             <>
+              <Button onClick={handleCancel} variant="outline" size="icon-lg">
+                <CornerUpLeft className="w-4 h-4" />
+              </Button>
               <Button
                 onClick={handleSave}
                 variant="outline"
@@ -78,25 +81,9 @@ export function DailyCard({
               >
                 <Save className="w-4 h-4" />
               </Button>
-              <Button
-                onClick={handleCancel}
-                variant="outline"
-                size="icon-lg"
-                className="text-red-600 hover:text-red-700"
-              >
-                <CornerUpLeft className="w-4 h-4" />
-              </Button>
             </>
           ) : (
             <>
-              <Button
-                onClick={handleEdit}
-                variant="outline"
-                className="cursor-pointer"
-                size="icon-lg"
-              >
-                <Edit className="w-4 h-4" />
-              </Button>
               <Button
                 onClick={() => onDelete?.(id)}
                 variant="outline"
@@ -104,6 +91,14 @@ export function DailyCard({
                 className="text-red-600 hover:text-red-700"
               >
                 <Trash2 className="w-4 h-4" />
+              </Button>
+              <Button
+                onClick={handleEdit}
+                variant="outline"
+                className="cursor-pointer"
+                size="icon-lg"
+              >
+                <Edit className="w-4 h-4" />
               </Button>
             </>
           )}

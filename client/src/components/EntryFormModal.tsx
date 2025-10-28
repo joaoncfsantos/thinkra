@@ -240,12 +240,13 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
                     placeholder={`Goal ${index + 1}`}
                     value={goal}
                     onChange={(e) => updateGoal(index, e.target.value)}
+                    className="dark:border-neutral-700"
                   />
 
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
+                    size="icon-lg"
                     onClick={() => removeGoal(index)}
                     className="px-2"
                     disabled={goals.length === 1}
@@ -283,12 +284,13 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
                     placeholder={`Gain ${index + 1}`}
                     value={gain}
                     onChange={(e) => updateGain(index, e.target.value)}
+                    className="dark:border-neutral-700"
                   />
                   {
                     <Button
                       type="button"
                       variant="outline"
-                      size="sm"
+                      size="icon-lg"
                       onClick={() => removeGain(index)}
                       className="px-2"
                       disabled={gains.length === 1}

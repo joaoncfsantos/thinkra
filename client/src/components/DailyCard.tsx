@@ -28,7 +28,6 @@ export function DailyCard({
     }
 
     setIsEditing(false);
-    // Call the onUpdate callback to save changes to parent component
 
     //Clean empty goals and gains from the array
     const cleanGoals = editableGoals.filter((goal) => goal.trim() !== "");
@@ -40,6 +39,7 @@ export function DailyCard({
     // Clear errors on successful save
     setErrors({});
 
+    // Call the onUpdate callback to save changes to parent component
     if (onUpdate) {
       onUpdate(cleanGoals, cleanGains);
     }
@@ -65,10 +65,8 @@ export function DailyCard({
 
   const handleCancel = () => {
     setIsEditing(false);
-    // Reset to original values
     setEditableGoals(goals);
     setEditableGains(gains);
-    // Clear any validation errors
     setErrors({});
   };
 

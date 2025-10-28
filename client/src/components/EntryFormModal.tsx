@@ -122,19 +122,14 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
       gains: validGains,
     });
 
-    // Reset form
-    const today = new Date();
-    setSelectedDate(today);
-    setMonth(today);
-    setDateValue(formatDate(today));
-    setGoals([""]);
-    setGains([""]);
-    setErrors({});
-    onOpenChange(false);
+    resetForm();
   };
 
   const handleCancel = () => {
-    // Reset form
+    resetForm();
+  };
+
+  const resetForm = () => {
     const today = new Date();
     setSelectedDate(today);
     setMonth(today);

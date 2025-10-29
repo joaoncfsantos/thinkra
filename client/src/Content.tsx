@@ -70,11 +70,29 @@ function Content() {
       }
 
       const data = await r.json();
+
+      const hasValidGoals =
+        data.result.goals &&
+        data.result.goals.length > 0 &&
+        data.result.goals.some((goal: string) => goal.trim() !== "");
+      const hasValidGains =
+        data.result.gains &&
+        data.result.gains.length > 0 &&
+        data.result.gains.some((gain: string) => gain.trim() !== "");
+
+      if (!hasValidGoals && !hasValidGains) {
+        setError(
+          "No goals or gains were found in the transcription. Please try recording again with clearer content about your goals and gains."
+        );
+        setIsModalOpen(false);
+        return;
+      }
+
       await handleCreateDailyEntry(
         {
           date: new Date().toISOString().split("T")[0],
-          goals: data.result.goals,
-          gains: data.result.gains,
+          goals: data.result.goals || [],
+          gains: data.result.gains || [],
         },
         true
       );

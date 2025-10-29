@@ -28,11 +28,11 @@ interface AudioRecorderProps {
 }
 
 interface AudioRefs {
-  mediaRecorder: React.MutableRefObject<MediaRecorder | null>;
-  audioContext: React.MutableRefObject<AudioContext | null>;
-  analyser: React.MutableRefObject<AnalyserNode | null>;
-  animationFrame: React.MutableRefObject<number | null>;
-  isRecording: React.MutableRefObject<boolean>;
+  mediaRecorder: React.RefObject<MediaRecorder | null>;
+  audioContext: React.RefObject<AudioContext | null>;
+  analyser: React.RefObject<AnalyserNode | null>;
+  animationFrame: React.RefObject<number | null>;
+  isRecording: React.RefObject<boolean>;
 }
 
 export function AudioRecorder({

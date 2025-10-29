@@ -224,12 +224,6 @@ function Content() {
       />
 
       <div className="w-full max-w-2xl">
-        toast.error(error);
-        {/* {error && (
-          <div className="text-center text-red-500 bg-red-50 dark:bg-red-950 p-4 rounded-lg">
-            <p>Error: {error}</p>
-          </div>
-        )} */}
         {dailyEntries.map((entry) => (
           <div className="mb-4" key={entry.id}>
             <DailyCard

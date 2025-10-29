@@ -1,19 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { AudioRecorder } from "./components/AudioRecorder";
 import { DailyCard } from "./components/DailyCard";
 import { EntryFormModal } from "./components/EntryFormModal";
 import { ConfirmationModal } from "./components/DeleteConfirmationModal";
 
 import type { DailyEntry } from "./interfaces/DailyEntry";
 import { Button } from "./components/ui/button";
-import {
-  Edit,
-  FileText,
-  NotebookPen,
-  PenTool,
-  Plus,
-  PlusCircle,
-} from "lucide-react";
+import { NotebookPen } from "lucide-react";
+
+import { toast } from "sonner";
 
 function Content() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -81,8 +75,8 @@ function Content() {
         data.result.gains.some((gain: string) => gain.trim() !== "");
 
       if (!hasValidGoals && !hasValidGains) {
-        setError(
-          "No goals or gains were found in the transcription. Please try recording again with clearer content about your goals and gains."
+        toast.error(
+          "No goals or gains were found in the recording. Please try recording again with clearer content about your goals and gains."
         );
         setIsModalOpen(false);
         return;

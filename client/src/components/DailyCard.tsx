@@ -3,6 +3,7 @@ import { Edit, Save, X, Trash2, Plus, CornerUpLeft } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
+import { toast } from "sonner";
 
 export function DailyCard({
   id,
@@ -53,10 +54,12 @@ export function DailyCard({
 
     if (validGoals.length === 0) {
       newErrors.goals = "At least one goal is required";
+      toast.error("At least one goal is required");
     }
 
     if (validGains.length === 0) {
       newErrors.gains = "At least one gain is required";
+      toast.error("At least one gain is required");
     }
 
     setErrors(newErrors);
@@ -150,9 +153,6 @@ export function DailyCard({
         <div className="mb-4">
           <div className="flex justify-between items-center mb-2">
             <h3 className="font-semibold">Gains:</h3>
-            {errors.gains && (
-              <p className="text-sm text-red-500">{errors.gains}</p>
-            )}
           </div>
           <ol className="list-decimal list-inside space-y-1">
             {editableGains.map((gain, index) => (
@@ -163,7 +163,9 @@ export function DailyCard({
                       placeholder={`Gain ${index + 1}`}
                       value={gain}
                       onChange={(e) => handleGainChange(index, e.target.value)}
-                      className="dark:border-neutral-700"
+                      className={`dark:border-neutral-700 ${
+                        errors.gains && "!border-red-700"
+                      }`}
                     />
                     <Button
                       onClick={() => removeGain(index)}
@@ -200,9 +202,6 @@ export function DailyCard({
         <div>
           <div className="flex justify-between items-center mb-2">
             <h3 className="font-semibold">Goals:</h3>
-            {errors.goals && (
-              <p className="text-sm text-red-500">{errors.goals}</p>
-            )}
           </div>
           <ol className="list-decimal list-inside space-y-1">
             {editableGoals.map((goal, index) => (
@@ -213,7 +212,9 @@ export function DailyCard({
                       placeholder={`Gain ${index + 1}`}
                       value={goal}
                       onChange={(e) => handleGoalChange(index, e.target.value)}
-                      className="dark:border-neutral-700"
+                      className={`dark:border-neutral-700 ${
+                        errors.goals && "!border-red-700"
+                      }`}
                     />
                     <Button
                       onClick={() => removeGoal(index)}

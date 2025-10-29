@@ -14,7 +14,7 @@ const AUDIO_CONFIG = {
 const DEFAULT_CIRCLE_CONFIG = {
   MIN_SIZE: 100,
   MAX_SIZE: 300,
-  COLOR: "bg-white",
+  COLOR: "bg-black dark:bg-white",
   TRANSITION_DURATION: "duration-200",
 } as const;
 
@@ -254,7 +254,7 @@ export function AudioRecorder({
 
       {/* Full-screen overlay when recording */}
       {isRecording && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center">
           {/* Volume-responsive circle in the center */}
           <div
             className={`rounded-full ${circleColor} transition-all ${DEFAULT_CIRCLE_CONFIG.TRANSITION_DURATION} ease-out shadow-2xl`}
@@ -281,8 +281,8 @@ export function AudioRecorder({
 
           {/* Recording indicator */}
           <div className="absolute top-10 left-1/2 transform -translate-x-1/2">
-            <div className="flex items-center gap-2 text-white rounded-full">
-              <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+            <div className="flex items-center gap-2 text-black dark:text-white rounded-full">
+              <div className="w-3 h-3 bg-black dark:bg-white rounded-full animate-pulse"></div>
               <span className="text-sm font-medium animate-pulse">
                 Tell me about your day
               </span>

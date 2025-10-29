@@ -164,7 +164,7 @@ export function DailyCard({
                       value={gain}
                       onChange={(e) => handleGainChange(index, e.target.value)}
                       className={`dark:border-neutral-700 ${
-                        errors.gains && "!border-red-700"
+                        errors.gains && "!border-red-700 border-2"
                       }`}
                     />
                     <Button
@@ -209,11 +209,11 @@ export function DailyCard({
                 {isEditing ? (
                   <>
                     <Input
-                      placeholder={`Gain ${index + 1}`}
+                      placeholder={`Goal ${index + 1}`}
                       value={goal}
                       onChange={(e) => handleGoalChange(index, e.target.value)}
                       className={`dark:border-neutral-700 ${
-                        errors.goals && "!border-red-700"
+                        errors.goals && "!border-red-700 border-2"
                       }`}
                     />
                     <Button

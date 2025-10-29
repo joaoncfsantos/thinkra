@@ -7,6 +7,7 @@ import { Calendar } from "./ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Plus, CalendarIcon, X } from "lucide-react";
 import { AudioRecorder } from "./AudioRecorder";
+import { toast } from "sonner";
 
 interface EntryFormModalProps {
   open: boolean;
@@ -102,10 +103,12 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
 
     if (validGoals.length === 0) {
       newErrors.goals = "At least one goal is required";
+      toast.error("At least one goal is required");
     }
 
     if (validGains.length === 0) {
       newErrors.gains = "At least one gain is required";
+      toast.error("At least one gain is required");
     }
 
     setErrors(newErrors);
@@ -234,10 +237,6 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <Label>Goals</Label>
-
-              {errors.goals && (
-                <p className="text-sm text-red-500">{errors.goals}</p>
-              )}
             </div>
             <div className="space-y-2">
               {goals.map((goal, index) => (
@@ -246,7 +245,9 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
                     placeholder={`Goal ${index + 1}`}
                     value={goal}
                     onChange={(e) => updateGoal(index, e.target.value)}
-                    className="dark:border-neutral-700"
+                    className={`dark:border-neutral-700 ${
+                      errors.goals && "!border-red-700 border-2"
+                    }`}
                   />
 
                   <Button
@@ -279,9 +280,6 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <Label>Gains</Label>
-              {errors.gains && (
-                <p className="text-sm text-red-500">{errors.gains}</p>
-              )}
             </div>
             <div className="space-y-2">
               {gains.map((gain, index) => (
@@ -290,7 +288,9 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
                     placeholder={`Gain ${index + 1}`}
                     value={gain}
                     onChange={(e) => updateGain(index, e.target.value)}
-                    className="dark:border-neutral-700"
+                    className={`dark:border-neutral-700 ${
+                      errors.gains && "!border-red-700 border-2"
+                    }`}
                   />
                   {
                     <Button

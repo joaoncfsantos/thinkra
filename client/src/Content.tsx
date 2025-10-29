@@ -12,7 +12,6 @@ import { toast } from "sonner";
 function Content() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
-  const [error, setError] = useState<string>("");
   const [dailyEntries, setDailyEntries] = useState<DailyEntry[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -47,7 +46,6 @@ function Content() {
     }
 
     setIsTranscribing(true);
-    setError("");
 
     try {
       const fd = new FormData();
@@ -91,7 +89,7 @@ function Content() {
         true
       );
     } catch (err) {
-      setError(
+      toast.error(
         err instanceof Error ? err.message : "Failed to transcribe audio"
       );
     } finally {
@@ -226,18 +224,12 @@ function Content() {
       />
 
       <div className="w-full max-w-2xl">
-        {isTranscribing && (
-          <div className="text-center text-muted-foreground">
-            <p>Transcribing audio...</p>
-          </div>
-        )}
-
-        {error && (
+        toast.error(error);
+        {/* {error && (
           <div className="text-center text-red-500 bg-red-50 dark:bg-red-950 p-4 rounded-lg">
             <p>Error: {error}</p>
           </div>
-        )}
-
+        )} */}
         {dailyEntries.map((entry) => (
           <div className="mb-4" key={entry.id}>
             <DailyCard

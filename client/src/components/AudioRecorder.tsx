@@ -69,6 +69,20 @@ export function AudioRecorder({
     );
   }, [volume]);
 
+  // Prevent body scroll when recording
+  useEffect(() => {
+    if (isRecording) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isRecording]);
+
   // Audio analysis function
   const analyzeAudio = useCallback(() => {
     if (!refs.analyser.current || !refs.isRecording.current) {
@@ -221,40 +235,61 @@ export function AudioRecorder({
   }, []);
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
-      {/* Volume-responsive circle */}
-      {isRecording && (
-        <div
-          className={`absolute rounded-full ${circleColor} transition-all ${DEFAULT_CIRCLE_CONFIG.TRANSITION_DURATION} ease-out shadow-lg`}
-          style={{
-            width: `${circleSize}px`,
-            height: `${circleSize}px`,
-            transform: "translate(-50%, -50%)",
-            left: "50%",
-            top: "50%",
-          }}
-        />
-      )}
-
-      {/* Recording controls */}
+    <>
+      {/* Recording button */}
       <div
-        className={`relative z-10 flex flex-col items-center justify-center space-y-4 ${
+        className={`flex flex-col items-center justify-center space-y-4 ${
           className || ""
         }`}
       >
         <Button
           onClick={handleRecordClick}
-          variant={isRecording ? "destructive" : "default"}
+          variant="default"
           size="icon"
           className="w-12 h-12 rounded-full shadow-lg"
         >
-          {isRecording ? (
-            <Square className="w-5 h-5" />
-          ) : (
-            <Mic className="w-5 h-5" />
-          )}
+          <Mic className="w-5 h-5" />
         </Button>
       </div>
-    </div>
+
+      {/* Full-screen overlay when recording */}
+      {isRecording && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center">
+          {/* Volume-responsive circle in the center */}
+          <div
+            className={`rounded-full ${circleColor} transition-all ${DEFAULT_CIRCLE_CONFIG.TRANSITION_DURATION} ease-out shadow-2xl`}
+            style={{
+              width: `${circleSize}px`,
+              height: `${circleSize}px`,
+            }}
+          />
+
+          {/* Stop recording button */}
+          <div className="flex flex-col items-center justify-center gap-2 absolute bottom-20 left-1/2 transform -translate-x-1/2">
+            <Button
+              onClick={handleRecordClick}
+              variant="destructive"
+              size="icon"
+              className="w-16 h-16 rounded-full shadow-2xl"
+            >
+              <Square className="w-6 h-6" />
+            </Button>
+            <span className="text-xs font-medium text-muted-foreground">
+              Click to stop or press spacebar
+            </span>
+          </div>
+
+          {/* Recording indicator */}
+          <div className="absolute top-10 left-1/2 transform -translate-x-1/2">
+            <div className="flex items-center gap-2 text-white rounded-full">
+              <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium animate-pulse">
+                Tell me about your day
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

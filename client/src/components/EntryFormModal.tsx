@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -6,11 +6,14 @@ import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Plus, CalendarIcon, X } from "lucide-react";
+import { AudioRecorder } from "./AudioRecorder";
 
 interface EntryFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: { date: string; goals: string[]; gains: string[] }) => void;
+  handleAudioSubmission: (audioBlob: Blob) => void;
+  isTranscribing: boolean;
 }
 
 function formatDate(date: Date | undefined) {
@@ -36,6 +39,8 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
   open,
   onOpenChange,
   onSubmit,
+  handleAudioSubmission,
+  isTranscribing,
 }) => {
   // Date picker state
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -49,6 +54,12 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
   const [goals, setGoals] = useState<string[]>([""]);
   const [gains, setGains] = useState<string[]>([""]);
   const [errors, setErrors] = useState<{ goals?: string; gains?: string }>({});
+
+  useEffect(() => {
+    if (open) {
+      setErrors({});
+    }
+  }, [open]);
 
   // ... existing functions (addGoal, removeGoal, updateGoal, addGain, removeGain, updateGain, validateForm) ...
   const addGoal = () => {
@@ -310,16 +321,23 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-end space-x-2">
-            <Button
-              className="text-neutral-900 dark:text-white"
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-            >
-              Cancel
-            </Button>
-            <Button type="submit">Create Entry</Button>
+          <div className="flex flex-row items-center justify-between">
+            <AudioRecorder
+              onRecordingComplete={handleAudioSubmission}
+              isTranscribing={isTranscribing}
+            />
+
+            <div className="flex justify-end space-x-2">
+              <Button
+                className="text-neutral-900 dark:text-white"
+                type="button"
+                variant="outline"
+                onClick={handleCancel}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">Create Entry</Button>
+            </div>
           </div>
         </form>
       </DialogContent>

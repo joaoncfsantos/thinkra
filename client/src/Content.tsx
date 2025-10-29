@@ -6,6 +6,14 @@ import { ConfirmationModal } from "./components/DeleteConfirmationModal";
 
 import type { DailyEntry } from "./interfaces/DailyEntry";
 import { Button } from "./components/ui/button";
+import {
+  Edit,
+  FileText,
+  NotebookPen,
+  PenTool,
+  Plus,
+  PlusCircle,
+} from "lucide-react";
 
 function Content() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -62,11 +70,14 @@ function Content() {
       }
 
       const data = await r.json();
-      handleCreateDailyEntry({
-        date: new Date().toISOString().split("T")[0],
-        goals: data.result.goals,
-        gains: data.result.gains,
-      });
+      await handleCreateDailyEntry(
+        {
+          date: new Date().toISOString().split("T")[0],
+          goals: data.result.goals,
+          gains: data.result.gains,
+        },
+        true
+      );
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to transcribe audio"
@@ -76,11 +87,14 @@ function Content() {
     }
   };
 
-  const handleCreateDailyEntry = async (formData: {
-    date: string;
-    goals: string[];
-    gains: string[];
-  }) => {
+  const handleCreateDailyEntry = async (
+    formData: {
+      date: string;
+      goals: string[];
+      gains: string[];
+    },
+    closeModal: boolean = true
+  ) => {
     try {
       const API_URL = import.meta.env.VITE_API_URL;
 
@@ -99,13 +113,19 @@ function Content() {
           gains: formData.gains,
         }),
       });
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      //const data = await response.json();
+
       await fetchEntries();
+
+      if (closeModal) {
+        setIsModalOpen(false);
+      }
     } catch (error) {
       console.error("Failed to create entry:", error);
+      throw error;
     }
   };
 
@@ -179,12 +199,9 @@ function Content() {
       <div className="w-full flex flex-row items-center justify-between">
         <p className="text-3xl font-bold text-black dark:text-white">Hi!</p>
         <div className="flex flex-row items-center justify-end gap-2 ">
-          <Button onClick={() => setIsModalOpen(true)}>Create Entry</Button>
-          <p className="text-muted-foreground text-sm">or</p>
-          <AudioRecorder
-            onRecordingComplete={handleAudioSubmission}
-            isTranscribing={isTranscribing}
-          />
+          <Button onClick={() => setIsModalOpen(true)}>
+            <NotebookPen className="size-4" />
+          </Button>
         </div>
       </div>
 
@@ -192,6 +209,8 @@ function Content() {
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         onSubmit={handleCreateDailyEntry}
+        handleAudioSubmission={handleAudioSubmission}
+        isTranscribing={isTranscribing}
       />
 
       <div className="w-full max-w-2xl">

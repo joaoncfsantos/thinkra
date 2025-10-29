@@ -196,7 +196,7 @@ function Content() {
 
   return (
     <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">
-      <div className="w-full flex flex-row items-center justify-between">
+      <div className="max-w-2xl w-full flex flex-row items-center justify-between">
         <p className="text-3xl font-bold text-black dark:text-white">Hi!</p>
         <div className="flex flex-row items-center justify-end gap-2 ">
           <Button onClick={() => setIsModalOpen(true)}>

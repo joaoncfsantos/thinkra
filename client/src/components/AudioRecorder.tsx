@@ -12,10 +12,14 @@ const AUDIO_CONFIG = {
   SMOOTHING_FACTOR: 0.8,
 } as const;
 
+// Define the recording states as an enum
+type RecordingState = "idle" | "recording" | "processing" | "transcribing";
+
 interface AudioRecorderProps {
   onRecordingComplete?: (audioBlob: Blob) => void;
   onVolumeChange?: (volume: number) => void;
   className?: string;
+  isTranscribing?: boolean;
 }
 
 interface AudioRefs {
@@ -30,9 +34,10 @@ export function AudioRecorder({
   onRecordingComplete,
   onVolumeChange,
   className,
+  isTranscribing = false,
 }: AudioRecorderProps) {
-  // State
-  const [isRecording, setIsRecording] = useState(false);
+  // Use a single state machine instead of multiple boolean states
+  const [recordingState, setRecordingState] = useState<RecordingState>("idle");
   const [volume, setVolume] = useState(0);
   const [smoothedVolume, setSmoothedVolume] = useState(0);
 
@@ -45,6 +50,11 @@ export function AudioRecorder({
     isRecording: useRef(false),
   };
 
+  // Derived states for cleaner logic
+  const isRecording = recordingState === "recording";
+  const isProcessing = recordingState === "processing";
+  const showOverlay = recordingState !== "idle";
+
   // Volume smoothing effect
   useEffect(() => {
     const targetVolume = volume * AUDIO_CONFIG.VOLUME_AMPLIFICATION;
@@ -53,19 +63,27 @@ export function AudioRecorder({
     );
   }, [volume]);
 
-  // Prevent body scroll when recording
+  // Update body scroll effect
   useEffect(() => {
-    if (isRecording) {
+    if (showOverlay || isTranscribing) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
     }
 
-    // Cleanup on unmount
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [isRecording]);
+  }, [showOverlay, isTranscribing]);
+
+  // Handle external transcription state changes
+  useEffect(() => {
+    if (isTranscribing && recordingState === "processing") {
+      setRecordingState("transcribing");
+    } else if (!isTranscribing && recordingState === "transcribing") {
+      setRecordingState("idle");
+    }
+  }, [isTranscribing, recordingState]);
 
   // Audio analysis function
   const analyzeAudio = useCallback(() => {
@@ -146,6 +164,8 @@ export function AudioRecorder({
 
     mediaRecorder.onstop = () => {
       const audioBlob = new Blob(chunks, { type: mediaRecorder.mimeType });
+      // Set processing state immediately - this prevents the blink
+      setRecordingState("processing");
       onRecordingComplete?.(audioBlob);
       cleanup(stream);
     };
@@ -177,6 +197,7 @@ export function AudioRecorder({
   // Start recording
   const startRecording = async (): Promise<void> => {
     try {
+      setRecordingState("recording");
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
       await setupAudioAnalysis(stream);
@@ -184,11 +205,11 @@ export function AudioRecorder({
 
       // Start recording and analysis
       refs.mediaRecorder.current.start();
-      setIsRecording(true);
       refs.isRecording.current = true;
       analyzeAudio();
     } catch (error) {
       console.error("Error accessing microphone:", error);
+      setRecordingState("idle");
     }
   };
 
@@ -197,7 +218,7 @@ export function AudioRecorder({
     if (refs.mediaRecorder.current && isRecording) {
       refs.isRecording.current = false;
       refs.mediaRecorder.current.stop();
-      setIsRecording(false);
+      // Don't set state here - let the onstop callback handle it
     }
   };
 
@@ -231,16 +252,19 @@ export function AudioRecorder({
           variant="default"
           size="icon"
           className="w-12 h-12 rounded-full shadow-lg"
+          disabled={recordingState !== "idle" && recordingState !== "recording"}
         >
           <Mic className="w-5 h-5" />
         </Button>
       </div>
 
-      {/* Full-screen overlay when recording */}
-      {isRecording && (
+      {/* Full-screen overlay */}
+      {showOverlay && (
         <ScreenOverlay
           volume={smoothedVolume}
           handleRecordClick={handleRecordClick}
+          isRecording={isRecording}
+          isTranscribing={isProcessing || isTranscribing}
         />
       )}
     </>

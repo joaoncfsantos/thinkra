@@ -179,7 +179,10 @@ function Content() {
       <div className="flex flex-row items-center justify-center gap-4">
         <Button onClick={() => setIsModalOpen(true)}>Create Entry</Button>
         <p className="text-muted-foreground">or</p>
-        <AudioRecorder onRecordingComplete={handleAudioSubmission} />
+        <AudioRecorder
+          onRecordingComplete={handleAudioSubmission}
+          isTranscribing={isTranscribing} // Pass transcription state
+        />
       </div>
 
       <EntryFormModal

@@ -233,49 +233,6 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
           onSubmit={handleSubmit}
           className="flex flex-col gap-4 text-neutral-900 dark:text-white "
         >
-          {/* Goals Section */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <Label>Goals</Label>
-            </div>
-            <div className="space-y-2">
-              {goals.map((goal, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <Input
-                    placeholder={`Goal ${index + 1}`}
-                    value={goal}
-                    onChange={(e) => updateGoal(index, e.target.value)}
-                    className={`dark:border-neutral-700 ${
-                      errors.goals && "!border-red-700 border-2"
-                    }`}
-                  />
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon-lg"
-                    onClick={() => removeGoal(index)}
-                    className="px-2"
-                    disabled={goals.length === 1}
-                  >
-                    <X className="size-3.5" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-center">
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="rounded-full"
-                onClick={addGoal}
-              >
-                <Plus />
-              </Button>
-            </div>
-          </div>
-
           {/* Gains Section */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
@@ -314,6 +271,49 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
                 className="rounded-full"
                 type="button"
                 onClick={addGain}
+              >
+                <Plus />
+              </Button>
+            </div>
+          </div>
+
+          {/* Goals Section */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <Label>Goals</Label>
+            </div>
+            <div className="space-y-2">
+              {goals.map((goal, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <Input
+                    placeholder={`Goal ${index + 1}`}
+                    value={goal}
+                    onChange={(e) => updateGoal(index, e.target.value)}
+                    className={`dark:border-neutral-700 ${
+                      errors.goals && "!border-red-700 border-2"
+                    }`}
+                  />
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon-lg"
+                    onClick={() => removeGoal(index)}
+                    className="px-2"
+                    disabled={goals.length === 1}
+                  >
+                    <X className="size-3.5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-center">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="rounded-full"
+                onClick={addGoal}
               >
                 <Plus />
               </Button>

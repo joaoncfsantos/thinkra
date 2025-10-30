@@ -8,11 +8,11 @@ export async function extractGapsAndGains(input: string) {
         {
           role: "system",
           content:
-            "You are a helpful assistant that extracts goals and gains from journal entries. Extract 3 goals for the next day and 3 gains from the current day, as succint as possible. Format as JSON with 'goals' and 'gains' arrays.",
+            "You are a helpful assistant that extracts goals and gains from journal entries. A goal is something you want to achieve in the next day and a gain is something you did today that you are proud of. Extract the goals for the next day and the gains from the current day, as succint as possible. Only extract the explicitgoals and gains, without creating new ones. Format as JSON with 'goals' and 'gains' arrays.",
         },
         {
           role: "user",
-          content: `Extract the three goals for the next day and three gains from today from this text: ${input}`,
+          content: `Extract the goals for the next day and the gains from today from this text: ${input}`,
         },
       ],
       response_format: { type: "json_object" },

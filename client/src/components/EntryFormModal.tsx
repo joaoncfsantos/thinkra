@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -6,11 +6,15 @@ import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Plus, CalendarIcon, X } from "lucide-react";
+import { AudioRecorder } from "./AudioRecorder";
+import { toast } from "sonner";
 
 interface EntryFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: { date: string; goals: string[]; gains: string[] }) => void;
+  handleAudioSubmission: (audioBlob: Blob) => void;
+  isTranscribing: boolean;
 }
 
 function formatDate(date: Date | undefined) {
@@ -36,6 +40,8 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
   open,
   onOpenChange,
   onSubmit,
+  handleAudioSubmission,
+  isTranscribing,
 }) => {
   // Date picker state
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -49,6 +55,12 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
   const [goals, setGoals] = useState<string[]>([""]);
   const [gains, setGains] = useState<string[]>([""]);
   const [errors, setErrors] = useState<{ goals?: string; gains?: string }>({});
+
+  useEffect(() => {
+    if (open) {
+      setErrors({});
+    }
+  }, [open]);
 
   // ... existing functions (addGoal, removeGoal, updateGoal, addGain, removeGain, updateGain, validateForm) ...
   const addGoal = () => {
@@ -91,10 +103,12 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
 
     if (validGoals.length === 0) {
       newErrors.goals = "At least one goal is required";
+      toast.error("At least one goal is required");
     }
 
     if (validGains.length === 0) {
       newErrors.gains = "At least one gain is required";
+      toast.error("At least one gain is required");
     }
 
     setErrors(newErrors);
@@ -219,58 +233,10 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
           onSubmit={handleSubmit}
           className="flex flex-col gap-4 text-neutral-900 dark:text-white "
         >
-          {/* Goals Section */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <Label>Goals</Label>
-
-              {errors.goals && (
-                <p className="text-sm text-red-500">{errors.goals}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              {goals.map((goal, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <Input
-                    placeholder={`Goal ${index + 1}`}
-                    value={goal}
-                    onChange={(e) => updateGoal(index, e.target.value)}
-                    className="dark:border-neutral-700"
-                  />
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon-lg"
-                    onClick={() => removeGoal(index)}
-                    className="px-2"
-                    disabled={goals.length === 1}
-                  >
-                    <X className="size-3.5" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-center">
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="rounded-full"
-                onClick={addGoal}
-              >
-                <Plus />
-              </Button>
-            </div>
-          </div>
-
           {/* Gains Section */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <Label>Gains</Label>
-              {errors.gains && (
-                <p className="text-sm text-red-500">{errors.gains}</p>
-              )}
             </div>
             <div className="space-y-2">
               {gains.map((gain, index) => (
@@ -279,7 +245,9 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
                     placeholder={`Gain ${index + 1}`}
                     value={gain}
                     onChange={(e) => updateGain(index, e.target.value)}
-                    className="dark:border-neutral-700"
+                    className={`dark:border-neutral-700 ${
+                      errors.gains && "!border-red-700 border-2"
+                    }`}
                   />
                   {
                     <Button
@@ -309,17 +277,67 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
             </div>
           </div>
 
+          {/* Goals Section */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <Label>Goals</Label>
+            </div>
+            <div className="space-y-2">
+              {goals.map((goal, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <Input
+                    placeholder={`Goal ${index + 1}`}
+                    value={goal}
+                    onChange={(e) => updateGoal(index, e.target.value)}
+                    className={`dark:border-neutral-700 ${
+                      errors.goals && "!border-red-700 border-2"
+                    }`}
+                  />
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon-lg"
+                    onClick={() => removeGoal(index)}
+                    className="px-2"
+                    disabled={goals.length === 1}
+                  >
+                    <X className="size-3.5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-center">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="rounded-full"
+                onClick={addGoal}
+              >
+                <Plus />
+              </Button>
+            </div>
+          </div>
+
           {/* Action Buttons */}
-          <div className="flex justify-end space-x-2">
-            <Button
-              className="text-neutral-900 dark:text-white"
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-            >
-              Cancel
-            </Button>
-            <Button type="submit">Create Entry</Button>
+          <div className="flex flex-row items-center justify-between">
+            <AudioRecorder
+              onRecordingComplete={handleAudioSubmission}
+              isTranscribing={isTranscribing}
+            />
+
+            <div className="flex justify-end space-x-2">
+              <Button
+                className="text-neutral-900 dark:text-white"
+                type="button"
+                variant="outline"
+                onClick={handleCancel}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">Create Entry</Button>
+            </div>
           </div>
         </form>
       </DialogContent>

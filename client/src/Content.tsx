@@ -1,22 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { AudioRecorder } from "./components/AudioRecorder";
 import { DailyCard } from "./components/DailyCard";
 import { EntryFormModal } from "./components/EntryFormModal";
 import { ConfirmationModal } from "./components/DeleteConfirmationModal";
 
 import type { DailyEntry } from "./interfaces/DailyEntry";
 import { Button } from "./components/ui/button";
+import { NotebookPen } from "lucide-react";
+
+import { toast } from "sonner";
 
 function Content() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [transcribedText, setTranscribedText] = useState<string>("");
-  const [gapsAndGains, setGapsAndGains] = useState<{
-    goals: string[];
-    gains: string[];
-  }>({ goals: [], gains: [] });
   const [isTranscribing, setIsTranscribing] = useState(false);
-  const [error, setError] = useState<string>("");
-  const [recordingDate, setRecordingDate] = useState<string>("");
   const [dailyEntries, setDailyEntries] = useState<DailyEntry[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -44,16 +39,13 @@ function Content() {
     fetchEntries();
   }, []);
 
-  const handleRecordingComplete = async (audioBlob: Blob) => {
+  const handleAudioSubmission = async (audioBlob: Blob) => {
     const audioUrl = URL.createObjectURL(audioBlob);
     if (audioRef.current) {
       audioRef.current.src = audioUrl;
     }
 
     setIsTranscribing(true);
-    setError("");
-    setTranscribedText("");
-    setRecordingDate(new Date().toLocaleDateString());
 
     try {
       const fd = new FormData();
@@ -70,10 +62,34 @@ function Content() {
       }
 
       const data = await r.json();
-      setTranscribedText(data.text);
-      setGapsAndGains(data.result);
+
+      const hasValidGoals =
+        data.result.goals &&
+        data.result.goals.length > 0 &&
+        data.result.goals.some((goal: string) => goal.trim() !== "");
+      const hasValidGains =
+        data.result.gains &&
+        data.result.gains.length > 0 &&
+        data.result.gains.some((gain: string) => gain.trim() !== "");
+
+      if (!hasValidGoals && !hasValidGains) {
+        toast.error(
+          "No goals or gains were found in the recording. Please try recording again with clearer content about your goals and gains."
+        );
+        setIsModalOpen(false);
+        return;
+      }
+
+      await handleCreateDailyEntry(
+        {
+          date: new Date().toISOString().split("T")[0],
+          goals: data.result.goals || [],
+          gains: data.result.gains || [],
+        },
+        true
+      );
     } catch (err) {
-      setError(
+      toast.error(
         err instanceof Error ? err.message : "Failed to transcribe audio"
       );
     } finally {
@@ -81,31 +97,45 @@ function Content() {
     }
   };
 
-  const handleCreateDailyEntry = async (formData: {
-    date: string;
-    goals: string[];
-    gains: string[];
-  }) => {
+  const handleCreateDailyEntry = async (
+    formData: {
+      date: string;
+      goals: string[];
+      gains: string[];
+    },
+    closeModal: boolean = true
+  ) => {
     try {
       const API_URL = import.meta.env.VITE_API_URL;
+
+      const dateString = formData.date.includes("/")
+        ? new Date(formData.date).toISOString().split("T")[0]
+        : formData.date;
+
       const response = await fetch(`${API_URL}/api/daily-entry`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          date: new Date(formData.date),
+          date: dateString,
           goals: formData.goals,
           gains: formData.gains,
         }),
       });
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      //const data = await response.json();
+
       await fetchEntries();
+
+      if (closeModal) {
+        setIsModalOpen(false);
+      }
     } catch (error) {
       console.error("Failed to create entry:", error);
+      throw error;
     }
   };
 
@@ -176,38 +206,24 @@ function Content() {
 
   return (
     <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">
-      <div className="flex flex-row items-center justify-center gap-4">
-        <Button onClick={() => setIsModalOpen(true)}>Create Entry</Button>
-        <p className="text-muted-foreground">or</p>
-        <AudioRecorder onRecordingComplete={handleRecordingComplete} />
+      <div className="max-w-2xl w-full flex flex-row items-center justify-between">
+        <p className="text-3xl font-bold text-black dark:text-white">Hi!</p>
+        <div className="flex flex-row items-center justify-end gap-2 ">
+          <Button onClick={() => setIsModalOpen(true)}>
+            <NotebookPen className="size-4" />
+          </Button>
+        </div>
       </div>
 
       <EntryFormModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         onSubmit={handleCreateDailyEntry}
+        handleAudioSubmission={handleAudioSubmission}
+        isTranscribing={isTranscribing}
       />
 
       <div className="w-full max-w-2xl">
-        {isTranscribing && (
-          <div className="text-center text-muted-foreground">
-            <p>Transcribing audio...</p>
-          </div>
-        )}
-
-        {error && (
-          <div className="text-center text-red-500 bg-red-50 dark:bg-red-950 p-4 rounded-lg">
-            <p>Error: {error}</p>
-          </div>
-        )}
-
-        {transcribedText && (
-          <div className="text-center text-muted-foreground">
-            <p>Transcribed text:</p>
-            <p>{transcribedText}</p>
-          </div>
-        )}
-
         {dailyEntries.map((entry) => (
           <div className="mb-4" key={entry.id}>
             <DailyCard

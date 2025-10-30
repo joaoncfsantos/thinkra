@@ -179,8 +179,12 @@ export function AudioRecorder({
     stream?.getTracks().forEach((track) => track.stop());
 
     // Close audio context
-    if (refs.audioContext.current) {
+    if (
+      refs.audioContext.current &&
+      refs.audioContext.current.state !== "closed"
+    ) {
       refs.audioContext.current.close();
+      refs.audioContext.current = null;
     }
 
     // Cancel animation frame

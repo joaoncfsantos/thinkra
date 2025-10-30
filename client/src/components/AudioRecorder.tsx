@@ -253,6 +253,7 @@ export function AudioRecorder({
           size="icon"
           className="w-12 h-12 rounded-full shadow-lg"
           disabled={recordingState !== "idle" && recordingState !== "recording"}
+          type="button"
         >
           <Mic className="w-5 h-5" />
         </Button>

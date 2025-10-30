@@ -79,6 +79,7 @@ export function ScreenOverlay({
             variant="destructive"
             size="icon"
             className={`${OVERLAY_CONFIG.BUTTON.SIZE} rounded-full shadow-2xl`}
+            type="button"
           >
             <Square className="w-6 h-6" />
           </Button>

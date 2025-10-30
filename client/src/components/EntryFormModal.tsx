@@ -156,7 +156,10 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl w-[90vw]  max-h-[50vh] overflow-y-auto">
+      <DialogContent
+        showCloseButton={false}
+        className="max-w-3xl w-[90vw]  max-h-[50vh] overflow-y-auto"
+      >
         <DialogHeader>
           <div className="flex justify-between items-center">
             <div className="flex-1">

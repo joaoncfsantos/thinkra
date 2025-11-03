@@ -8,12 +8,14 @@ import {
 import { User, LogOut, Settings, LogIn } from "lucide-react";
 
 import { LoginModal } from "./LoginModal";
+import { SignUpModal } from "./SignUpModal";
 import { useState } from "react";
 
 const user = null;
 
 export function ProfileDropdown() {
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showSignUpModal, setShowSignUpModal] = useState(false);
 
   return (
     <>
@@ -38,7 +40,7 @@ export function ProfileDropdown() {
           ) : (
             <DropdownMenuItem
               onClick={() => {
-                setIsLoginModalOpen(true);
+                setShowLoginModal(true);
               }}
             >
               <LogIn className="w-4 h-4" />
@@ -47,7 +49,16 @@ export function ProfileDropdown() {
           )}
         </DropdownMenuContent>
       </DropdownMenu>
-      <LoginModal open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen} />
+      <LoginModal
+        open={showLoginModal}
+        onOpenChange={setShowLoginModal}
+        onSwitchToSignUp={() => setShowSignUpModal(true)}
+      />
+      <SignUpModal
+        open={showSignUpModal}
+        onOpenChange={setShowSignUpModal}
+        onSwitchToLogin={() => setShowLoginModal(true)}
+      />
     </>
   );
 }

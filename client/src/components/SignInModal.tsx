@@ -12,7 +12,7 @@ import { Icon } from "@iconify/react";
 import { Input } from "./ui/input";
 import { EyeIcon, EyeClosedIcon } from "lucide-react";
 
-export function LoginModal({
+export function SignInModal({
   open,
   onOpenChange,
   onSwitchToSignUp,

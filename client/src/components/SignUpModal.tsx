@@ -21,7 +21,23 @@ export function SignUpModal({
   onOpenChange: (open: boolean) => void;
   onSwitchToLogin: () => void;
 }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleSignUp = async () => {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const response = await fetch(`${API_URL}/api/sign-up`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, email, password }),
+    });
+    const data = await response.json();
+    console.log(data);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -67,7 +83,7 @@ export function SignUpModal({
           <hr className="flex-1" />
         </div>
         <div className="w-full">
-          <form>
+          <form onSubmit={handleSignUp}>
             <FieldSet>
               <Field>
                 <FieldLabel>Name*</FieldLabel>
@@ -76,6 +92,13 @@ export function SignUpModal({
                   type="text"
                   placeholder="Enter your name"
                   required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSignUp();
+                    }
+                  }}
                 />
               </Field>
               <Field>
@@ -85,6 +108,13 @@ export function SignUpModal({
                   type="email"
                   placeholder="Enter your email address"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSignUp();
+                    }
+                  }}
                 />
               </Field>
               <Field>
@@ -95,6 +125,13 @@ export function SignUpModal({
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••••"
                     required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleSignUp();
+                      }
+                    }}
                   />
                   <button
                     type="button"
@@ -137,7 +174,11 @@ export function SignUpModal({
               </Field>
 
               <div className="flex flex-col gap-2">
-                <Button type="submit" className="cursor-pointer">
+                <Button
+                  onClick={handleSignUp}
+                  type="button"
+                  className="cursor-pointer"
+                >
                   Sign up
                 </Button>
                 <div

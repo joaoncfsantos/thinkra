@@ -3,6 +3,7 @@ import cors from "cors";
 
 import transcriptionRoutes from "./routes/transcription";
 import dailyEntryRoutes from "./routes/dailyEntry";
+import authenticationRoutes from "./routes/authentication";
 
 const app = express();
 const port = 3000;
@@ -12,6 +13,7 @@ app.use(cors({ origin: "http://localhost:5173" }));
 
 app.use("/api", transcriptionRoutes);
 app.use("/api", dailyEntryRoutes);
+app.use("/api", authenticationRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

@@ -21,7 +21,22 @@ export function LoginModal({
   onOpenChange: (open: boolean) => void;
   onSwitchToSignUp: () => void;
 }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleSignIn = async () => {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const response = await fetch(`${API_URL}/api/sign-in`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await response.json();
+    console.log(data);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -67,7 +82,7 @@ export function LoginModal({
           <hr className="flex-1" />
         </div>
         <div className="w-full">
-          <form>
+          <form onSubmit={handleSignIn}>
             <FieldSet>
               <Field>
                 <FieldLabel>Email address*</FieldLabel>
@@ -76,6 +91,13 @@ export function LoginModal({
                   type="email"
                   placeholder="Enter your email address"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSignIn();
+                    }
+                  }}
                 />
               </Field>
               <div>
@@ -87,6 +109,13 @@ export function LoginModal({
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••••"
                       required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          handleSignIn();
+                        }
+                      }}
                     />
                     <button
                       type="button"

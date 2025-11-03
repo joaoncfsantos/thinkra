@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -6,7 +7,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
+import { Field, FieldLabel, FieldSet } from "./ui/field";
 import { Icon } from "@iconify/react";
+import { Input } from "./ui/input";
+import { EyeIcon, EyeClosedIcon } from "lucide-react";
 
 export function LoginModal({
   open,
@@ -15,6 +19,8 @@ export function LoginModal({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -27,7 +33,7 @@ export function LoginModal({
             Welcome back!
           </DialogTitle>
           <DialogDescription className="break-words">
-            Please enter your details to sign in.
+            Please enter your details to sign in
           </DialogDescription>
         </DialogHeader>
         <div className="flex gap-2 w-full sm:flex-row flex-col justify-center">
@@ -52,6 +58,69 @@ export function LoginModal({
             />
             <span>Apple</span>
           </Button>
+        </div>
+        <div className="gap-4 flex flex-row items-center">
+          <hr className="flex-1" />
+          <p>or</p>
+          <hr className="flex-1" />
+        </div>
+        <div className="w-full">
+          <form>
+            <FieldSet>
+              <Field>
+                <FieldLabel>Email address*</FieldLabel>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email address"
+                  required
+                />
+              </Field>
+              <div>
+                <Field>
+                  <FieldLabel>Password*</FieldLabel>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••••"
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 flex items-center pr-3"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      <div className="w-4 h-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors cursor-pointer">
+                        {showPassword ? (
+                          <EyeClosedIcon className="size-4" />
+                        ) : (
+                          <EyeIcon className="size-4" />
+                        )}
+                      </div>
+                    </button>
+                  </div>
+                </Field>
+                <div
+                  onClick={() => {}}
+                  className="flex justify-end text-sm text-muted-foreground hover:text-primary cursor-pointer"
+                >
+                  Forgot password?
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Button type="submit" className="cursor-pointer">
+                  Sign in
+                </Button>
+                <div
+                  onClick={() => {}}
+                  className="flex justify-center text-sm text-muted-foreground hover:text-primary cursor-pointer"
+                >
+                  Don't have an account? Sign up!
+                </div>
+              </div>
+            </FieldSet>
+          </form>
         </div>
       </DialogContent>
     </Dialog>

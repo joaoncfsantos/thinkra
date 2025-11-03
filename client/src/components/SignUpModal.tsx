@@ -11,6 +11,7 @@ import { Field, FieldLabel, FieldSet } from "./ui/field";
 import { Icon } from "@iconify/react";
 import { Input } from "./ui/input";
 import { EyeIcon, EyeClosedIcon } from "lucide-react";
+import { toast } from "sonner";
 
 export function SignUpModal({
   open,
@@ -27,16 +28,25 @@ export function SignUpModal({
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSignUp = async () => {
-    const API_URL = import.meta.env.VITE_API_URL;
-    const response = await fetch(`${API_URL}/api/sign-up`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name, email, password }),
-    });
-    const data = await response.json();
-    console.log(data);
+    try {
+      const API_URL = import.meta.env.VITE_API_URL;
+
+      const response = await fetch(`${API_URL}/api/sign-up`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || `HTTP error! status: ${response.status}`);
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to sign up");
+    }
   };
 
   return (

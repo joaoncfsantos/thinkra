@@ -32,7 +32,7 @@ export default function LandingPage() {
       <SignUpModal
         open={showSignUpModal}
         onOpenChange={setShowSignUpModal}
-        onSwitchToLogin={() => {
+        onSwitchToSignIn={() => {
           setShowSignInModal(true);
         }}
       />

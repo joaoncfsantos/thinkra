@@ -41,7 +41,7 @@ export function ProfileDropdown() {
                 }}
               >
                 <LogOut className="w-4 h-4" />
-                Log out
+                Sign out
               </DropdownMenuItem>
             </>
           ) : (
@@ -51,7 +51,7 @@ export function ProfileDropdown() {
               }}
             >
               <LogIn className="w-4 h-4" />
-              <span>Login</span>
+              <span>Sign in</span>
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
@@ -64,7 +64,7 @@ export function ProfileDropdown() {
       <SignUpModal
         open={showSignUpModal}
         onOpenChange={setShowSignUpModal}
-        onSwitchToLogin={() => setShowSignInModal(true)}
+        onSwitchToSignIn={() => setShowSignInModal(true)}
       />
     </>
   );

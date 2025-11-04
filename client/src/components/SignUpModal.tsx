@@ -17,11 +17,11 @@ import { useAuth } from "@/context/AuthContext";
 export function SignUpModal({
   open,
   onOpenChange,
-  onSwitchToLogin,
+  onSwitchToSignIn,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSwitchToLogin: () => void;
+  onSwitchToSignIn: () => void;
 }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -193,7 +193,7 @@ export function SignUpModal({
                 <div
                   onClick={() => {
                     onOpenChange(false);
-                    onSwitchToLogin();
+                    onSwitchToSignIn();
                   }}
                   className="flex justify-center text-sm text-muted-foreground hover:text-primary cursor-pointer"
                 >

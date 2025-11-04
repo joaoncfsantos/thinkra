@@ -35,6 +35,10 @@ export function SignUpModal({
       await signUp(name, email, password);
       onOpenChange(false);
       toast.success("Signed up successfully!");
+      setName("");
+      setEmail("");
+      setPassword("");
+      setShowPassword(false);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to sign up");
     }
@@ -45,6 +49,7 @@ export function SignUpModal({
       <DialogContent
         showCloseButton={false}
         className="max-w-[calc(100%-1rem)] sm:max-w-md"
+        onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader className="text-center space-y-2">
           <div className="text-3xl font-bold mb-2 break-words">Gap & Gain</div>

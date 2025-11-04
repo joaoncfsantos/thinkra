@@ -11,6 +11,8 @@ import { Field, FieldLabel, FieldSet } from "./ui/field";
 import { Icon } from "@iconify/react";
 import { Input } from "./ui/input";
 import { EyeIcon, EyeClosedIcon } from "lucide-react";
+import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
 
 export function SignInModal({
   open,
@@ -25,17 +27,21 @@ export function SignInModal({
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const { signIn } = useAuth();
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    handleSignIn();
+  };
+
   const handleSignIn = async () => {
-    const API_URL = import.meta.env.VITE_API_URL;
-    const response = await fetch(`${API_URL}/api/sign-in`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await response.json();
-    console.log(data);
+    try {
+      await signIn(email, password);
+      onOpenChange(false);
+      toast.success("Signed in successfully!");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to sign in");
+    }
   };
 
   return (
@@ -82,7 +88,7 @@ export function SignInModal({
           <hr className="flex-1" />
         </div>
         <div className="w-full">
-          <form onSubmit={handleSignIn}>
+          <form onSubmit={handleSubmit}>
             <FieldSet>
               <Field>
                 <FieldLabel>Email address*</FieldLabel>
@@ -93,11 +99,6 @@ export function SignInModal({
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleSignIn();
-                    }
-                  }}
                 />
               </Field>
               <div>
@@ -111,11 +112,6 @@ export function SignInModal({
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          handleSignIn();
-                        }
-                      }}
                     />
                     <button
                       type="button"

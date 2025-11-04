@@ -10,10 +10,12 @@ import { User, LogOut, Settings, LogIn } from "lucide-react";
 import { SignInModal } from "./SignInModal";
 import { SignUpModal } from "./SignUpModal";
 import { useState } from "react";
-
-const user = null;
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 export function ProfileDropdown() {
+  const { user, signOut } = useAuth();
+
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
 
@@ -32,7 +34,12 @@ export function ProfileDropdown() {
                 <Settings className="w-4 h-4" />
                 Settings
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  signOut();
+                  toast.success("Logged out successfully!");
+                }}
+              >
                 <LogOut className="w-4 h-4" />
                 Log out
               </DropdownMenuItem>

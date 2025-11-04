@@ -8,6 +8,7 @@ import { Button } from "./components/ui/button";
 import { NotebookPen } from "lucide-react";
 
 import { toast } from "sonner";
+import { useAuth } from "./context/AuthContext";
 
 function Content() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -204,10 +205,14 @@ function Content() {
     }
   };
 
+  const { user } = useAuth();
+
   return (
     <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">
       <div className="max-w-2xl w-full flex flex-row items-center justify-between">
-        <p className="text-3xl font-bold text-black dark:text-white">Hi!</p>
+        <p className="text-3xl font-bold text-black dark:text-white">
+          Hi{user ? `, ${user.name}` : ""}!
+        </p>
         <div className="flex flex-row items-center justify-end gap-2 ">
           <Button onClick={() => setIsModalOpen(true)}>
             <NotebookPen className="size-4" />

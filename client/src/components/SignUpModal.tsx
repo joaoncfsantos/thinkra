@@ -12,6 +12,7 @@ import { Icon } from "@iconify/react";
 import { Input } from "./ui/input";
 import { EyeIcon, EyeClosedIcon } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
 
 export function SignUpModal({
   open,
@@ -27,23 +28,13 @@ export function SignUpModal({
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const { signUp } = useAuth();
+
   const handleSignUp = async () => {
     try {
-      const API_URL = import.meta.env.VITE_API_URL;
-
-      const response = await fetch(`${API_URL}/api/sign-up`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || `HTTP error! status: ${response.status}`);
-      }
+      await signUp(name, email, password);
+      onOpenChange(false);
+      toast.success("Signed up successfully!");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to sign up");
     }

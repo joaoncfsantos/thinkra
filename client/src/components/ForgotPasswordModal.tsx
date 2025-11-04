@@ -71,7 +71,7 @@ export function ForgotPasswordModal({
               <Field>
                 <FieldLabel>Email address*</FieldLabel>
                 <Input
-                  id="email"
+                  id="email-forgot"
                   type="email"
                   placeholder="Enter your email address"
                   required

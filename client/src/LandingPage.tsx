@@ -1,3 +1,4 @@
+import { ForgotPasswordModal } from "./components/ForgotPasswordModal";
 import { SignInModal } from "./components/SignInModal";
 import { SignUpModal } from "./components/SignUpModal";
 import { Button } from "./components/ui/button";
@@ -6,6 +7,7 @@ import { useState } from "react";
 export default function LandingPage() {
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
 
   return (
     <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">
@@ -25,13 +27,21 @@ export default function LandingPage() {
       <SignInModal
         open={showSignInModal}
         onOpenChange={setShowSignInModal}
-        onSwitchToSignUp={() => {
-          setShowSignUpModal(true);
+        onSwitchToSignUp={() => setShowSignUpModal(true)}
+        onSwitchToForgotPassword={() => {
+          setShowForgotPasswordModal(true);
         }}
       />
       <SignUpModal
         open={showSignUpModal}
         onOpenChange={setShowSignUpModal}
+        onSwitchToSignIn={() => {
+          setShowSignInModal(true);
+        }}
+      />
+      <ForgotPasswordModal
+        open={showForgotPasswordModal}
+        onOpenChange={setShowForgotPasswordModal}
         onSwitchToSignIn={() => {
           setShowSignInModal(true);
         }}

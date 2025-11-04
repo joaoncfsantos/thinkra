@@ -54,7 +54,9 @@ export function SignUpModal({
     try {
       await signUp(name, email, password);
       onOpenChange(false);
-      toast.success("Signed up successfully!");
+      toast.success(
+        "Signed up successfully! Please confirm your email to continue."
+      );
       setName("");
       setEmail("");
       setPassword("");

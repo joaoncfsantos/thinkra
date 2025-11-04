@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { DailyCard } from "./components/DailyCard";
 import { EntryFormModal } from "./components/EntryFormModal";
 import { ConfirmationModal } from "./components/DeleteConfirmationModal";
+import LandingPage from "./LandingPage";
 
 import type { DailyEntry } from "./interfaces/DailyEntry";
 import { Button } from "./components/ui/button";
@@ -223,7 +224,7 @@ function Content() {
     }
   };
 
-  return (
+  return user ? (
     <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">
       <div className="max-w-2xl w-full flex flex-row items-center justify-between">
         <p className="text-3xl font-bold text-black dark:text-white">
@@ -269,6 +270,8 @@ function Content() {
         message="Are you sure you want to delete this entry?"
       />
     </div>
+  ) : (
+    <LandingPage />
   );
 }
 

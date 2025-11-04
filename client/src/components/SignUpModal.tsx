@@ -81,21 +81,21 @@ export function SignUpModal({
           </DialogDescription>
         </DialogHeader>
         <div className="flex gap-2 w-full sm:flex-row flex-col justify-center">
-          <Button variant="outline" className="justify-center flex-1">
+          <Button variant="outline" className="justify-center flex-1" disabled>
             <Icon
               icon="logos:google-icon"
               className="w-4 h-4 mr-2 flex-shrink-0"
             />
             <span>Google</span>
           </Button>
-          <Button variant="outline" className="justify-center flex-1">
+          <Button variant="outline" className="justify-center flex-1" disabled>
             <Icon
               icon="logos:facebook"
               className="w-4 h-4 mr-2 flex-shrink-0"
             />
             <span>Facebook</span>
           </Button>
-          <Button variant="outline" className="justify-center flex-1">
+          <Button variant="outline" className="justify-center flex-1" disabled>
             <Icon
               icon="logos:apple"
               className="w-4 h-4 mr-2 dark:invert flex-shrink-0"

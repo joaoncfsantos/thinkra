@@ -5,12 +5,14 @@ import {
   getDailyEntries,
   updateDailyEntry,
 } from "../repositories/dailyEntryRepository";
+import { authenticateUser, AuthenticatedRequest } from "../middleware/auth";
 
 const router = express.Router();
+router.use(authenticateUser);
 
-router.get("/daily-entry", async (req, res) => {
+router.get("/daily-entry", async (req: AuthenticatedRequest, res) => {
   try {
-    const entries = await getDailyEntries();
+    const entries = await getDailyEntries(req.user!.id);
 
     if (!Array.isArray(entries)) {
       console.log("Entries is not an array, returning 500");
@@ -24,10 +26,10 @@ router.get("/daily-entry", async (req, res) => {
   }
 });
 
-router.post("/daily-entry", async (req, res) => {
+router.post("/daily-entry", async (req: AuthenticatedRequest, res) => {
   try {
     const { date, goals, gains } = req.body;
-    const entry = await createDailyEntry(date, goals, gains);
+    const entry = await createDailyEntry(date, goals, gains, req.user!.id);
     res.json(entry);
   } catch (err: any) {
     console.error("Create entry error:", err.message);
@@ -35,10 +37,10 @@ router.post("/daily-entry", async (req, res) => {
   }
 });
 
-router.delete("/daily-entry/:id", async (req, res) => {
+router.delete("/daily-entry/:id", async (req: AuthenticatedRequest, res) => {
   try {
     const { id } = req.params;
-    const entry = await deleteDailyEntry(id);
+    const entry = await deleteDailyEntry(id, req.user!.id);
     res.json(entry);
   } catch (err: any) {
     console.error("Delete entry error:", err.message);
@@ -46,7 +48,7 @@ router.delete("/daily-entry/:id", async (req, res) => {
   }
 });
 
-router.put("/daily-entry/:id", async (req, res) => {
+router.put("/daily-entry/:id", async (req: AuthenticatedRequest, res) => {
   try {
     const { id } = req.params;
     const { goals, gains } = req.body;
@@ -57,7 +59,7 @@ router.put("/daily-entry/:id", async (req, res) => {
       });
     }
 
-    const result = await updateDailyEntry(id, goals, gains);
+    const result = await updateDailyEntry(id, goals, gains, req.user!.id);
 
     if (result.modified) {
       res.json({
@@ -75,7 +77,7 @@ router.put("/daily-entry/:id", async (req, res) => {
   } catch (err: any) {
     console.error("Update entry error:", err.message);
 
-    if (err.message === "Entry not found") {
+    if (err.message === "Entry not found or unauthorized") {
       return res.status(404).json({ error: err.message });
     }
 

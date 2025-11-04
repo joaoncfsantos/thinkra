@@ -18,11 +18,22 @@ function Content() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
 
+  const { user } = useAuth();
+
   const fetchEntries = async () => {
+    if (!user?.token) {
+      console.log("No token found");
+      return;
+    }
     try {
       const API_URL = import.meta.env.VITE_API_URL;
 
-      const response = await fetch(`${API_URL}/api/daily-entry`);
+      const response = await fetch(`${API_URL}/api/daily-entry`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -37,8 +48,10 @@ function Content() {
   };
 
   useEffect(() => {
-    fetchEntries();
-  }, []);
+    if (user) {
+      fetchEntries();
+    }
+  }, [user]);
 
   const handleAudioSubmission = async (audioBlob: Blob) => {
     const audioUrl = URL.createObjectURL(audioBlob);
@@ -116,6 +129,7 @@ function Content() {
       const response = await fetch(`${API_URL}/api/daily-entry`, {
         method: "POST",
         headers: {
+          Authorization: `Bearer ${user?.token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -154,6 +168,9 @@ function Content() {
         `${API_URL}/api/daily-entry/${entryToDelete}`,
         {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${user?.token}`,
+          },
         }
       );
       if (!response.ok) {
@@ -178,6 +195,7 @@ function Content() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token}`,
         },
         body: JSON.stringify({
           goals: newGoals,
@@ -204,8 +222,6 @@ function Content() {
       throw error;
     }
   };
-
-  const { user } = useAuth();
 
   return (
     <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">

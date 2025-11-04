@@ -11,9 +11,9 @@ const port = 3000;
 app.use(express.json());
 app.use(cors({ origin: "http://localhost:5173" }));
 
+app.use("/api", authenticationRoutes);
 app.use("/api", transcriptionRoutes);
 app.use("/api", dailyEntryRoutes);
-app.use("/api", authenticationRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

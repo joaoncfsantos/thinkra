@@ -1,9 +1,10 @@
 import supabase from "../utils/supabase";
 
-export async function getDailyEntries() {
+export async function getDailyEntries(userId: string) {
   const { data, error } = await supabase
     .from("daily_entries")
     .select("*")
+    .eq("user_id", userId)
     .order("date", { ascending: false });
 
   if (error) {
@@ -17,12 +18,14 @@ export async function getDailyEntries() {
 export async function createDailyEntry(
   date: string,
   goals: string[],
-  gains: string[]
+  gains: string[],
+  userId: string
 ) {
   const { data, error } = await supabase.from("daily_entries").insert({
     date,
     goals,
     gains,
+    user_id: userId,
   });
 
   if (error) {
@@ -33,11 +36,12 @@ export async function createDailyEntry(
   return data;
 }
 
-export async function deleteDailyEntry(id: string) {
+export async function deleteDailyEntry(id: string, userId: string) {
   const { data, error } = await supabase
     .from("daily_entries")
     .delete()
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) {
     console.error("Error deleting daily entry:", error);
@@ -50,13 +54,15 @@ export async function deleteDailyEntry(id: string) {
 export async function updateDailyEntry(
   id: string,
   newGoals: string[],
-  newGains: string[]
+  newGains: string[],
+  userId: string
 ) {
   // First, get the current entry
   const { data: currentEntry, error: fetchError } = await supabase
     .from("daily_entries")
     .select("goals, gains")
     .eq("id", id)
+    .eq("user_id", userId)
     .single();
 
   if (fetchError) {
@@ -65,7 +71,7 @@ export async function updateDailyEntry(
   }
 
   if (!currentEntry) {
-    throw new Error("Entry not found");
+    throw new Error("Entry not found or unauthorized");
   }
 
   // Clean and compare arrays
@@ -101,6 +107,7 @@ export async function updateDailyEntry(
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)
+    .eq("user_id", userId)
     .select();
 
   if (error) {

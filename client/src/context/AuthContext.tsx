@@ -1,11 +1,6 @@
 // Create src/contexts/AuthContext.tsx
 import { createContext, useContext, useEffect, useState } from "react";
-
-interface User {
-  id: string;
-  email: string;
-  name?: string;
-}
+import type { User } from "@/interfaces/User";
 
 interface AuthContextType {
   user: User | null;
@@ -25,7 +20,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check for stored session on app load
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        // Validate that the token exists and is not empty
+        if (parsedUser.token && parsedUser.token.trim() !== "") {
+          setUser(parsedUser);
+        } else {
+          // Clear invalid stored user
+          localStorage.removeItem("user");
+        }
+      } catch (error) {
+        console.error("Error parsing stored user:", error);
+        localStorage.removeItem("user");
+      }
     }
     setLoading(false);
   }, []);
@@ -41,10 +48,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error);
 
+    console.log("data", data);
+
     const userData = {
       id: data.user.id,
       email: data.user.email,
       name: data.user.user_metadata?.name,
+      token: data.session.access_token,
     };
 
     setUser(userData);
@@ -60,17 +70,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const API_URL = import.meta.env.VITE_API_URL;
     const response = await fetch(`${API_URL}/api/sign-up`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ name, email, password }),
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error);
 
-    if (data.user) {
+    if (data.user && data.session) {
       const userData = {
         id: data.user.id,
         email: data.user.email,
         name: data.user.user_metadata?.name,
+        token: data.session.access_token,
       };
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));

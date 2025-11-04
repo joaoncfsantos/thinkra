@@ -8,6 +8,7 @@ interface AuthContextType {
   signOut: () => void;
   signUp: (name: string, email: string, password: string) => Promise<void>;
   loading: boolean;
+  forgotPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -90,8 +91,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const forgotPassword = async (email: string) => {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const response = await fetch(`${API_URL}/api/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, signIn, signOut, signUp, loading }}>
+    <AuthContext.Provider
+      value={{ user, signIn, signOut, signUp, forgotPassword, loading }}
+    >
       {children}
     </AuthContext.Provider>
   );

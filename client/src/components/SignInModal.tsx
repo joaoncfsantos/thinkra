@@ -18,10 +18,12 @@ export function SignInModal({
   open,
   onOpenChange,
   onSwitchToSignUp,
+  onSwitchToForgotPassword,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSwitchToSignUp: () => void;
+  onSwitchToForgotPassword: () => void;
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -140,7 +142,10 @@ export function SignInModal({
                   </div>
                 </Field>
                 <div
-                  onClick={() => {}}
+                  onClick={() => {
+                    onOpenChange(false);
+                    onSwitchToForgotPassword();
+                  }}
                   className="flex justify-end text-sm text-muted-foreground hover:text-primary cursor-pointer"
                 >
                   Forgot password?

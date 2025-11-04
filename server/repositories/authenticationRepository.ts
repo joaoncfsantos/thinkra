@@ -43,3 +43,14 @@ export async function signOut() {
 
   return error;
 }
+
+export async function forgotPassword(email: string) {
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email);
+
+  if (error) {
+    console.error("Supabase error:", error);
+    throw new Error(`Failed to reset password: ${error.message}`);
+  }
+
+  return data;
+}

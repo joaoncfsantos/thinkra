@@ -1,5 +1,9 @@
 import express from "express";
-import { signUp, signIn } from "../repositories/authenticationRepository";
+import {
+  signUp,
+  signIn,
+  forgotPassword,
+} from "../repositories/authenticationRepository";
 
 const router = express.Router();
 
@@ -46,6 +50,23 @@ router.post("/sign-in", async (req, res) => {
     res.status(401).json({
       error: error instanceof Error ? error.message : "Failed to sign in",
     });
+  }
+});
+
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        error: "Email is required",
+      });
+    }
+
+    const user = await forgotPassword(email);
+    res.json(user);
+  } catch (error) {
+    console.error("Forgot password error:", error);
   }
 });
 

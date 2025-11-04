@@ -12,13 +12,14 @@ import { SignUpModal } from "./SignUpModal";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { ForgotPasswordModal } from "./ForgotPasswordModal";
 
 export function ProfileDropdown() {
   const { user, signOut } = useAuth();
 
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
-
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   return (
     <>
       <DropdownMenu>
@@ -60,10 +61,18 @@ export function ProfileDropdown() {
         open={showSignInModal}
         onOpenChange={setShowSignInModal}
         onSwitchToSignUp={() => setShowSignUpModal(true)}
+        onSwitchToForgotPassword={() => {
+          setShowForgotPasswordModal(true);
+        }}
       />
       <SignUpModal
         open={showSignUpModal}
         onOpenChange={setShowSignUpModal}
+        onSwitchToSignIn={() => setShowSignInModal(true)}
+      />
+      <ForgotPasswordModal
+        open={showForgotPasswordModal}
+        onOpenChange={setShowForgotPasswordModal}
         onSwitchToSignIn={() => setShowSignInModal(true)}
       />
     </>

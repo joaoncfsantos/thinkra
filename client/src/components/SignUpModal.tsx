@@ -26,9 +26,19 @@ export function SignUpModal({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const { signUp } = useAuth();
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      toast.error("Password confirmation failed!");
+      return;
+    }
+    handleSignUp();
+  };
 
   const handleSignUp = async () => {
     try {
@@ -39,6 +49,7 @@ export function SignUpModal({
       setEmail("");
       setPassword("");
       setShowPassword(false);
+      setConfirmPassword("");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to sign up");
     }
@@ -89,7 +100,7 @@ export function SignUpModal({
           <hr className="flex-1" />
         </div>
         <div className="w-full">
-          <form onSubmit={handleSignUp}>
+          <form onSubmit={handleSubmit}>
             <FieldSet>
               <Field>
                 <FieldLabel>Name*</FieldLabel>
@@ -100,11 +111,6 @@ export function SignUpModal({
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleSignUp();
-                    }
-                  }}
                 />
               </Field>
               <Field>
@@ -116,11 +122,6 @@ export function SignUpModal({
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleSignUp();
-                    }
-                  }}
                 />
               </Field>
               <Field>
@@ -133,11 +134,6 @@ export function SignUpModal({
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        handleSignUp();
-                      }
-                    }}
                   />
                   <button
                     type="button"
@@ -162,6 +158,8 @@ export function SignUpModal({
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••••"
                     required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                   />
                   <button
                     type="button"
@@ -180,11 +178,7 @@ export function SignUpModal({
               </Field>
 
               <div className="flex flex-col gap-2">
-                <Button
-                  onClick={handleSignUp}
-                  type="button"
-                  className="cursor-pointer"
-                >
+                <Button type="submit" className="cursor-pointer">
                   Sign up
                 </Button>
                 <div

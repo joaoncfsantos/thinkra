@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -28,6 +28,14 @@ export function SignInModal({
   const [showPassword, setShowPassword] = useState(false);
 
   const { signIn } = useAuth();
+
+  useEffect(() => {
+    if (!open) {
+      setEmail("");
+      setPassword("");
+      setShowPassword(false);
+    }
+  }, [open]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

@@ -8,6 +8,7 @@ export async function signUp(name: string, email: string, password: string) {
       data: {
         name,
       },
+      emailRedirectTo: `http://localhost:5173/`, // TODO: Change to production URL
     },
   });
 

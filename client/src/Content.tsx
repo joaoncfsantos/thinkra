@@ -2,12 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { DailyCard } from "./components/DailyCard";
 import { EntryFormModal } from "./components/EntryFormModal";
 import { ConfirmationModal } from "./components/DeleteConfirmationModal";
+import LandingPage from "./LandingPage";
 
 import type { DailyEntry } from "./interfaces/DailyEntry";
 import { Button } from "./components/ui/button";
 import { NotebookPen } from "lucide-react";
 
 import { toast } from "sonner";
+import { useAuth } from "./context/AuthContext";
 
 function Content() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -17,11 +19,22 @@ function Content() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
 
+  const { user } = useAuth();
+
   const fetchEntries = async () => {
+    if (!user?.token) {
+      console.log("No token found");
+      return;
+    }
     try {
       const API_URL = import.meta.env.VITE_API_URL;
 
-      const response = await fetch(`${API_URL}/api/daily-entry`);
+      const response = await fetch(`${API_URL}/api/daily-entry`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -36,8 +49,10 @@ function Content() {
   };
 
   useEffect(() => {
-    fetchEntries();
-  }, []);
+    if (user) {
+      fetchEntries();
+    }
+  }, [user]);
 
   const handleAudioSubmission = async (audioBlob: Blob) => {
     const audioUrl = URL.createObjectURL(audioBlob);
@@ -115,6 +130,7 @@ function Content() {
       const response = await fetch(`${API_URL}/api/daily-entry`, {
         method: "POST",
         headers: {
+          Authorization: `Bearer ${user?.token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -153,6 +169,9 @@ function Content() {
         `${API_URL}/api/daily-entry/${entryToDelete}`,
         {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${user?.token}`,
+          },
         }
       );
       if (!response.ok) {
@@ -177,6 +196,7 @@ function Content() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token}`,
         },
         body: JSON.stringify({
           goals: newGoals,
@@ -204,10 +224,12 @@ function Content() {
     }
   };
 
-  return (
+  return user ? (
     <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">
       <div className="max-w-2xl w-full flex flex-row items-center justify-between">
-        <p className="text-3xl font-bold text-black dark:text-white">Hi!</p>
+        <p className="text-3xl font-bold text-black dark:text-white">
+          Hi{user ? `, ${user.name}` : ""}!
+        </p>
         <div className="flex flex-row items-center justify-end gap-2 ">
           <Button onClick={() => setIsModalOpen(true)}>
             <NotebookPen className="size-4" />
@@ -248,6 +270,8 @@ function Content() {
         message="Are you sure you want to delete this entry?"
       />
     </div>
+  ) : (
+    <LandingPage />
   );
 }
 

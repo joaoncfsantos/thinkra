@@ -1,31 +1,8 @@
-const supabase = {
-  auth: {
-    getSession: async () => {
-      // Extract tokens from URL parameters instead
-      const urlParams = new URLSearchParams(window.location.search);
-      const accessToken = urlParams.get("access_token");
-      const refreshToken = urlParams.get("refresh_token");
+import { createClient } from "@supabase/supabase-js";
 
-      return {
-        data: {
-          session: accessToken
-            ? {
-                access_token: accessToken,
-                refresh_token: refreshToken,
-              }
-            : null,
-        },
-      };
-    },
-    setSession: async (tokens: {
-      access_token: string;
-      refresh_token: string;
-    }) => {
-      // Store tokens temporarily for the reset password request
-      sessionStorage.setItem("reset_tokens", JSON.stringify(tokens));
-      return { error: null };
-    },
-  },
-};
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default supabase;

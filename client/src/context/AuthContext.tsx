@@ -49,8 +49,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error);
 
-    console.log("data", data);
-
     const userData = {
       id: data.user.id,
       email: data.user.email,
@@ -111,17 +109,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error("No reset token found");
     }
 
-    const API_URL = import.meta.env.VITE_API_URL;
-    const response = await fetch(`${API_URL}/api/reset-password`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${tokens.access_token}`,
-      },
-      body: JSON.stringify({ password }),
+    // Import the supabase client
+    const { default: supabase } = await import("@/utils/supabase");
+
+    // Set the session with the recovery tokens
+    const { error: sessionError } = await supabase.auth.setSession({
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error);
+
+    if (sessionError) {
+      throw new Error(`Failed to set session: ${sessionError.message}`);
+    }
+
+    // Now update the password
+    const { error } = await supabase.auth.updateUser({
+      password: password,
+    });
+
+    if (error) {
+      throw new Error(`Failed to reset password: ${error.message}`);
+    }
 
     // Clear the temporary tokens
     sessionStorage.removeItem("reset_tokens");

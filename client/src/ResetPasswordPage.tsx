@@ -18,12 +18,6 @@ export default function ResetPasswordPage() {
         hashParams.get("refresh_token") || searchParams.get("refresh_token");
       const type = hashParams.get("type") || searchParams.get("type");
 
-      console.log("Full URL:", window.location.href);
-      console.log("Hash:", window.location.hash);
-      console.log("Search:", window.location.search);
-      console.log("Access token:", accessToken);
-      console.log("Type:", type);
-
       if (accessToken && refreshToken && type === "recovery") {
         sessionStorage.setItem(
           "reset_tokens",
@@ -34,7 +28,6 @@ export default function ResetPasswordPage() {
         );
         setShowModal(true);
       } else {
-        console.error("Missing tokens or invalid type");
         navigate("/");
       }
     };

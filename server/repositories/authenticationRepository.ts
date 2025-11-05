@@ -46,20 +46,7 @@ export async function signOut() {
 
 export async function forgotPassword(email: string) {
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `http://localhost:5173/reset-password`,
-  });
-
-  if (error) {
-    console.error("Supabase error:", error);
-    throw new Error(`Failed to reset password: ${error.message}`);
-  }
-
-  return data;
-}
-
-export async function resetPassword(password: string) {
-  const { data, error } = await supabase.auth.updateUser({
-    password: password,
+    redirectTo: `http://localhost:5173/reset-password`, // TODO: Change to production URL
   });
 
   if (error) {

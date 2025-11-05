@@ -52,7 +52,6 @@ export function AudioRecorder({
 
   // Derived states for cleaner logic
   const isRecording = recordingState === "recording";
-  const isProcessing = recordingState === "processing";
   const showOverlay = recordingState !== "idle";
 
   // Volume smoothing effect
@@ -269,7 +268,6 @@ export function AudioRecorder({
           volume={smoothedVolume}
           handleRecordClick={handleRecordClick}
           isRecording={isRecording}
-          isTranscribing={isProcessing || isTranscribing}
         />
       )}
     </>

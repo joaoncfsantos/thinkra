@@ -1,4 +1,3 @@
-// Create src/contexts/AuthContext.tsx
 import { createContext, useContext, useEffect, useState } from "react";
 import type { User } from "@/interfaces/User";
 
@@ -7,8 +6,9 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => void;
   signUp: (name: string, email: string, password: string) => Promise<void>;
-  loading: boolean;
   forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (password: string) => Promise<void>;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -102,9 +102,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!response.ok) throw new Error(data.error);
   };
 
+  const resetPassword = async (password: string) => {
+    // Get tokens from session storage
+    const storedTokens = sessionStorage.getItem("reset_tokens");
+    const tokens = storedTokens ? JSON.parse(storedTokens) : null;
+
+    if (!tokens?.access_token) {
+      throw new Error("No reset token found");
+    }
+
+    const API_URL = import.meta.env.VITE_API_URL;
+    const response = await fetch(`${API_URL}/api/reset-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tokens.access_token}`,
+      },
+      body: JSON.stringify({ password }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error);
+
+    // Clear the temporary tokens
+    sessionStorage.removeItem("reset_tokens");
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, signIn, signOut, signUp, forgotPassword, loading }}
+      value={{
+        user,
+        signIn,
+        signOut,
+        signUp,
+        forgotPassword,
+        resetPassword,
+        loading,
+      }}
     >
       {children}
     </AuthContext.Provider>

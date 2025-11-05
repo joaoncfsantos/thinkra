@@ -8,7 +8,7 @@ export async function signUp(name: string, email: string, password: string) {
       data: {
         name,
       },
-      emailRedirectTo: `http://localhost:5173/`, // TODO: Change to production URL
+      emailRedirectTo: process.env.CLIENT_URL,
     },
   });
 
@@ -47,7 +47,7 @@ export async function signOut() {
 
 export async function forgotPassword(email: string) {
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `http://localhost:5173/reset-password`, // TODO: Change to production URL
+    redirectTo: `${process.env.CLIENT_URL}/reset-password`,
   });
 
   if (error) {

@@ -6,10 +6,10 @@ import dailyEntryRoutes from "./routes/dailyEntry";
 import authenticationRoutes from "./routes/authentication";
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(cors({ origin: process.env.CLIENT_URL }));
 
 app.use("/api", authenticationRoutes);
 app.use("/api", transcriptionRoutes);

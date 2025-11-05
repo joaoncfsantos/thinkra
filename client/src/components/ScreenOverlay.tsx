@@ -26,7 +26,6 @@ interface ScreenOverlayProps {
   volume: number;
   handleRecordClick: () => void;
   isRecording: boolean;
-  isTranscribing: boolean;
   minCircleSize?: number;
   maxCircleSize?: number;
   circleColor?: string;
@@ -36,7 +35,6 @@ export function ScreenOverlay({
   volume,
   handleRecordClick,
   isRecording,
-  isTranscribing,
   minCircleSize = OVERLAY_CONFIG.CIRCLE.MIN_SIZE,
   maxCircleSize = OVERLAY_CONFIG.CIRCLE.MAX_SIZE,
   circleColor = OVERLAY_CONFIG.CIRCLE.COLOR,

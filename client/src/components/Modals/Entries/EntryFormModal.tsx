@@ -4,14 +4,18 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "../../ui/dialog";
-import { Input } from "../../ui/input";
-import { Label } from "../../ui/label";
-import { Button } from "../../ui/button";
-import { Calendar } from "../../ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Plus, CalendarIcon, X } from "lucide-react";
-import { AudioRecorder } from "../../AudioRecorder";
+import { AudioRecorder } from "@/components/AudioRecorder";
 import { toast } from "sonner";
 
 interface EntryFormModalProps {

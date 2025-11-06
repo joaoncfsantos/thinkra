@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import { Button } from "../../ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "../../ui/dialog";
-import { Field, FieldLabel, FieldSet } from "../../ui/field";
+} from "@/components/ui/dialog";
+import { Field, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Icon } from "@iconify/react";
-import { Input } from "../../ui/input";
+import { Input } from "@/components/ui/input";
 import { EyeIcon, EyeClosedIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";

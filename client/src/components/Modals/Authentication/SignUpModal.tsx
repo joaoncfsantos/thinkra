@@ -69,9 +69,10 @@ export function SignUpModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
+      {/* TODO: Add a blur in the bottom of the modal */}
       <DialogContent
         showCloseButton={false}
-        className="max-w-[calc(100%-1rem)] sm:max-w-md"
+        className="max-w-[calc(100%-2rem)] sm:max-w-md max-h-[calc(50vh)] sm:max-h-md overflow-y-auto"
       >
         <DialogHeader className="text-center space-y-2">
           <DialogTitle className="text-2xl text-neutral-900 dark:text-white break-words">

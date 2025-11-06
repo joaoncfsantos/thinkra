@@ -1,8 +1,13 @@
 import React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
-import { Button } from "./ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../../ui/dialog";
+import { Button } from "../../ui/button";
 
-interface ConfirmationModalProps {
+interface DeleteConfirmationModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
@@ -10,7 +15,9 @@ interface ConfirmationModalProps {
   message?: string;
 }
 
-export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
+export const DeleteConfirmationModal: React.FC<
+  DeleteConfirmationModalProps
+> = ({
   open,
   onOpenChange,
   onConfirm,

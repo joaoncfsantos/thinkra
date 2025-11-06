@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { DailyCard } from "./components/DailyCard";
-import { EntryFormModal } from "./components/EntryFormModal";
-import { ConfirmationModal } from "./components/DeleteConfirmationModal";
+import { EntryFormModal } from "./components/Modals/Entries/EntryFormModal";
+import { DeleteConfirmationModal } from "./components/Modals/Entries/DeleteConfirmationModal";
 import LandingPage from "./LandingPage";
 
 import type { DailyEntry } from "./interfaces/DailyEntry";
@@ -296,7 +296,7 @@ function Content() {
         )}
       </div>
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         open={deleteModalOpen}
         onOpenChange={setDeleteModalOpen}
         onConfirm={handleConfirmDelete}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ResetPasswordModal } from "./components/ResetPasswordModal";
+import { ResetPasswordModal } from "./components/Modals/Authentication/ResetPasswordModal";
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();

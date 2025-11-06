@@ -6,13 +6,13 @@ import {
   DropdownMenuItem,
 } from "./ui/dropdown-menu";
 import { User, LogOut, Settings, LogIn } from "lucide-react";
-
-import { SignInModal } from "./SignInModal";
-import { SignUpModal } from "./SignUpModal";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
-import { ForgotPasswordModal } from "./ForgotPasswordModal";
+
+import { SignInModal } from "./Modals/Authentication/SignInModal";
+import { SignUpModal } from "./Modals/Authentication/SignUpModal";
+import { ForgotPasswordModal } from "./Modals/Authentication/ForgotPasswordModal";
 
 export function ProfileDropdown() {
   const { user, signOut } = useAuth();

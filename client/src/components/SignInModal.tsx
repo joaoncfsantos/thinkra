@@ -64,7 +64,6 @@ export function SignInModal({
         className="max-w-[calc(100%-1rem)] sm:max-w-md"
       >
         <DialogHeader className="text-center space-y-2">
-          <div className="text-3xl font-bold mb-2 break-words">Gap & Gain</div>
           <DialogTitle className="text-2xl text-neutral-900 dark:text-white break-words">
             Welcome back!
           </DialogTitle>

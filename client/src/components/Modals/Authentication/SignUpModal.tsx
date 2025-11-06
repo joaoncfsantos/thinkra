@@ -8,11 +8,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Field, FieldLabel, FieldSet } from "@/components/ui/field";
-import { Icon } from "@iconify/react";
 import { Input } from "@/components/ui/input";
 import { EyeIcon, EyeClosedIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+import SocialMediaAuth from "./SocialMediaAuth";
 
 export function SignUpModal({
   open,
@@ -81,29 +81,7 @@ export function SignUpModal({
             Please enter your details to create an account
           </DialogDescription>
         </DialogHeader>
-        <div className="flex gap-2 w-full sm:flex-row flex-col justify-center">
-          <Button variant="outline" className="justify-center flex-1" disabled>
-            <Icon
-              icon="logos:google-icon"
-              className="w-4 h-4 mr-2 flex-shrink-0"
-            />
-            <span>Google</span>
-          </Button>
-          <Button variant="outline" className="justify-center flex-1" disabled>
-            <Icon
-              icon="logos:facebook"
-              className="w-4 h-4 mr-2 flex-shrink-0"
-            />
-            <span>Facebook</span>
-          </Button>
-          <Button variant="outline" className="justify-center flex-1" disabled>
-            <Icon
-              icon="logos:apple"
-              className="w-4 h-4 mr-2 dark:invert flex-shrink-0"
-            />
-            <span>Apple</span>
-          </Button>
-        </div>
+        <SocialMediaAuth />
         <div className="gap-4 flex flex-row items-center">
           <hr className="flex-1" />
           <p>or</p>
@@ -187,19 +165,21 @@ export function SignUpModal({
                 </div>
               </Field>
 
-              <div className="flex flex-col gap-2">
-                <Button type="submit" className="cursor-pointer">
-                  Sign up
-                </Button>
-                <div
+              <div className="flex flex-row gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="cursor-pointer flex-1"
                   onClick={() => {
                     onOpenChange(false);
                     onSwitchToSignIn();
                   }}
-                  className="flex justify-center text-sm text-muted-foreground hover:text-primary cursor-pointer"
                 >
-                  Already have an account? Sign in!
-                </div>
+                  Sign in
+                </Button>
+                <Button type="submit" className="cursor-pointer flex-1">
+                  Sign up
+                </Button>
               </div>
             </FieldSet>
           </form>

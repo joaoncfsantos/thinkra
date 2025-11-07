@@ -1,18 +1,19 @@
 import { useEffect, useState } from "react";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "./ui/dialog";
-import { Field, FieldLabel, FieldSet } from "./ui/field";
-import { Icon } from "@iconify/react";
-import { Input } from "./ui/input";
+} from "@/components/ui/dialog";
+import { Field, FieldLabel, FieldSet } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { EyeIcon, EyeClosedIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+import SocialMediaAuth from "./SocialMediaAuth";
+import { resetViewport } from "@/utils/utils";
 
 export function SignInModal({
   open,
@@ -48,6 +49,7 @@ export function SignInModal({
     try {
       await signIn(email, password);
       onOpenChange(false);
+      resetViewport();
       toast.success("Signed in successfully!");
       setEmail("");
       setPassword("");
@@ -61,10 +63,9 @@ export function SignInModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="max-w-[calc(100%-1rem)] sm:max-w-md"
+        className="max-w-[calc(100%-2rem)] sm:max-w-md max-h-[calc(50vh)] sm:max-h-md overflow-y-auto"
       >
         <DialogHeader className="text-center space-y-2">
-          <div className="text-3xl font-bold mb-2 break-words">Gap & Gain</div>
           <DialogTitle className="text-2xl text-neutral-900 dark:text-white break-words">
             Welcome back!
           </DialogTitle>
@@ -72,29 +73,7 @@ export function SignInModal({
             Please enter your details to sign in
           </DialogDescription>
         </DialogHeader>
-        <div className="flex gap-2 w-full sm:flex-row flex-col justify-center">
-          <Button variant="outline" className="justify-center flex-1" disabled>
-            <Icon
-              icon="logos:google-icon"
-              className="w-4 h-4 mr-2 flex-shrink-0"
-            />
-            <span>Google</span>
-          </Button>
-          <Button variant="outline" className="justify-center flex-1" disabled>
-            <Icon
-              icon="logos:facebook"
-              className="w-4 h-4 mr-2 flex-shrink-0"
-            />
-            <span>Facebook</span>
-          </Button>
-          <Button variant="outline" className="justify-center flex-1" disabled>
-            <Icon
-              icon="logos:apple"
-              className="w-4 h-4 mr-2 dark:invert flex-shrink-0"
-            />
-            <span>Apple</span>
-          </Button>
-        </div>
+        <SocialMediaAuth />
         <div className="gap-4 flex flex-row items-center">
           <hr className="flex-1" />
           <p>or</p>
@@ -141,29 +120,32 @@ export function SignInModal({
                     </button>
                   </div>
                 </Field>
-                <div
-                  onClick={() => {
-                    onOpenChange(false);
-                    onSwitchToForgotPassword();
-                  }}
-                  className="flex justify-end text-sm text-muted-foreground hover:text-primary cursor-pointer"
-                >
-                  Forgot password?
+                <div className="flex justify-end text-sm text-muted-foreground hover:text-primary cursor-pointer">
+                  <span
+                    onClick={() => {
+                      onOpenChange(false);
+                      onSwitchToForgotPassword();
+                    }}
+                  >
+                    Forgot password?
+                  </span>
                 </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <Button type="submit" className="cursor-pointer">
-                  Sign in
-                </Button>
-                <div
+              <div className="flex flex-row gap-2 justify-between">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="cursor-pointer flex-1"
                   onClick={() => {
                     onOpenChange(false);
                     onSwitchToSignUp();
                   }}
-                  className="flex justify-center text-sm text-muted-foreground hover:text-primary cursor-pointer"
                 >
-                  Don't have an account? Sign up!
-                </div>
+                  Sign up
+                </Button>
+                <Button type="submit" className="cursor-pointer flex-1">
+                  Sign in
+                </Button>
               </div>
             </FieldSet>
           </form>

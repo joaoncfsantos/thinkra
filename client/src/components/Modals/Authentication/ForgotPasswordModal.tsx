@@ -1,55 +1,54 @@
 import { useEffect, useState } from "react";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "./ui/dialog";
-import { Field, FieldLabel, FieldSet } from "./ui/field";
-import { Input } from "./ui/input";
+} from "@/components/ui/dialog";
+import { Field, FieldLabel, FieldSet } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+import { resetViewport } from "@/utils/utils";
 
-export function ResetPasswordModal({
+export function ForgotPasswordModal({
   open,
   onOpenChange,
+  onSwitchToSignIn,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSwitchToSignIn: () => void;
 }) {
-  const [password, setPassword] = useState("");
-  const [confirmationPassword, setConfirmationPassword] = useState("");
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
     if (!open) {
-      setPassword("");
+      setEmail("");
     }
   }, [open]);
 
-  const { resetPassword } = useAuth();
+  const { forgotPassword } = useAuth();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (password !== confirmationPassword) {
-      toast.error("Password confirmation failed!");
-      return;
-    }
-    handleResetPassword();
+    handleForgotPassword();
   };
 
-  const handleResetPassword = async () => {
+  const handleForgotPassword = async () => {
     try {
-      await resetPassword(password);
+      await forgotPassword(email);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to reset password"
       );
     }
-    toast.success("Password reset successful!");
+    toast.success("Password reset email sent!");
     onOpenChange(false);
-    setPassword("");
+    resetViewport();
+    setEmail("");
   };
 
   return (
@@ -59,12 +58,11 @@ export function ResetPasswordModal({
         className="max-w-[calc(100%-1rem)] sm:max-w-md"
       >
         <DialogHeader className="text-center space-y-2">
-          <div className="text-3xl font-bold mb-2 break-words">Gap & Gain</div>
           <DialogTitle className="text-2xl text-neutral-900 dark:text-white break-words">
-            Reset password
+            Forgot password?
           </DialogTitle>
           <DialogDescription className="break-words">
-            Please enter your new password
+            Please enter your email address to reset your password.
           </DialogDescription>
         </DialogHeader>
 
@@ -72,25 +70,14 @@ export function ResetPasswordModal({
           <form onSubmit={handleSubmit}>
             <FieldSet>
               <Field>
-                <FieldLabel>New Password*</FieldLabel>
+                <FieldLabel>Email address*</FieldLabel>
                 <Input
-                  id="new-password"
-                  type="password"
-                  placeholder="Enter your new password"
+                  id="email-forgot"
+                  type="email"
+                  placeholder="Enter your email address"
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </Field>
-              <Field>
-                <FieldLabel>Confirm New Password*</FieldLabel>
-                <Input
-                  id="new-confirmation-password"
-                  type="password"
-                  placeholder="Confirm your new password"
-                  required
-                  value={confirmationPassword}
-                  onChange={(e) => setConfirmationPassword(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </Field>
 
@@ -98,6 +85,15 @@ export function ResetPasswordModal({
                 <Button type="submit" className="cursor-pointer">
                   Reset password
                 </Button>
+                <div
+                  onClick={() => {
+                    onOpenChange(false);
+                    onSwitchToSignIn();
+                  }}
+                  className="flex justify-center text-sm text-muted-foreground hover:text-primary cursor-pointer"
+                >
+                  Already have an account? Sign in!
+                </div>
               </div>
             </FieldSet>
           </form>

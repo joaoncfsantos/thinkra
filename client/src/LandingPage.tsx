@@ -1,6 +1,6 @@
-import { ForgotPasswordModal } from "./components/ForgotPasswordModal";
-import { SignInModal } from "./components/SignInModal";
-import { SignUpModal } from "./components/SignUpModal";
+import { ForgotPasswordModal } from "./components/Modals/Authentication/ForgotPasswordModal";
+import { SignInModal } from "./components/Modals/Authentication/SignInModal";
+import { SignUpModal } from "./components/Modals/Authentication/SignUpModal";
 import { Button } from "./components/ui/button";
 import { useState } from "react";
 

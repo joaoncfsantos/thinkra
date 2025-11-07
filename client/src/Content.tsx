@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { DailyCard } from "./components/DailyCard";
-import { EntryFormModal } from "./components/EntryFormModal";
-import { ConfirmationModal } from "./components/DeleteConfirmationModal";
+import { EntryFormModal } from "./components/Modals/Entries/EntryFormModal";
+import { DeleteConfirmationModal } from "./components/Modals/Entries/DeleteConfirmationModal";
 import LandingPage from "./LandingPage";
 
 import type { DailyEntry } from "./interfaces/DailyEntry";
 import { Button } from "./components/ui/button";
 import { NotebookPen } from "lucide-react";
+import { Spinner } from "./components/ui/shadcn-io/spinner";
 
 import { toast } from "sonner";
 import { useAuth } from "./context/AuthContext";
@@ -18,6 +19,9 @@ function Content() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
+  const [isLoadingEntries, setIsLoadingEntries] = useState(false);
+
+  const [isCreatingEntry, setIsCreatingEntry] = useState(false);
 
   const { user } = useAuth();
 
@@ -26,6 +30,9 @@ function Content() {
       console.log("No token found");
       return;
     }
+
+    setIsLoadingEntries(true);
+
     try {
       const API_URL = import.meta.env.VITE_API_URL;
 
@@ -45,6 +52,8 @@ function Content() {
       setDailyEntries(data as DailyEntry[]);
     } catch (error) {
       console.error("Failed to fetch entries:", error);
+    } finally {
+      setIsLoadingEntries(false);
     }
   };
 
@@ -120,6 +129,8 @@ function Content() {
     },
     closeModal: boolean = true
   ) => {
+    setIsCreatingEntry(true);
+
     try {
       const API_URL = import.meta.env.VITE_API_URL;
 
@@ -152,6 +163,8 @@ function Content() {
     } catch (error) {
       console.error("Failed to create entry:", error);
       throw error;
+    } finally {
+      setIsCreatingEntry(false);
     }
   };
 
@@ -178,6 +191,7 @@ function Content() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       await fetchEntries();
+      setDeleteModalOpen(false);
     } catch (error) {
       console.error("Failed to delete entry:", error);
     } finally {
@@ -231,8 +245,15 @@ function Content() {
           Hi{user ? `, ${user.name}` : ""}!
         </p>
         <div className="flex flex-row items-center justify-end gap-2 ">
-          <Button onClick={() => setIsModalOpen(true)}>
-            <NotebookPen className="size-4" />
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            disabled={isCreatingEntry}
+          >
+            {isCreatingEntry ? (
+              <Spinner variant="circle" className="h-4 w-4" />
+            ) : (
+              <NotebookPen className="size-4" />
+            )}
           </Button>
         </div>
       </div>
@@ -246,23 +267,36 @@ function Content() {
       />
 
       <div className="w-full max-w-2xl">
-        {dailyEntries.map((entry) => (
-          <div className="mb-4" key={entry.id}>
-            <DailyCard
-              date={entry.date}
-              goals={entry.goals}
-              gains={entry.gains}
-              id={entry.id}
-              onDelete={handleDeleteRequest}
-              onUpdate={(newGoals, newGains) =>
-                handleUpdateDailyEntry(entry.id, newGoals, newGains)
-              }
+        {isLoadingEntries ? (
+          <div className="flex justify-center items-center py-8">
+            <Spinner
+              variant="circle"
+              className="h-8 w-8 text-muted-foreground"
             />
           </div>
-        ))}
+        ) : dailyEntries.length > 0 ? (
+          dailyEntries.map((entry) => (
+            <div className="mb-4" key={entry.id}>
+              <DailyCard
+                date={entry.date}
+                goals={entry.goals}
+                gains={entry.gains}
+                id={entry.id}
+                onDelete={handleDeleteRequest}
+                onUpdate={(newGoals, newGains) =>
+                  handleUpdateDailyEntry(entry.id, newGoals, newGains)
+                }
+              />
+            </div>
+          ))
+        ) : (
+          <div className="text-muted-foreground text-center text-sm py-4">
+            No entries found. Start by creating a new entry!
+          </div>
+        )}
       </div>
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         open={deleteModalOpen}
         onOpenChange={setDeleteModalOpen}
         onConfirm={handleConfirmDelete}

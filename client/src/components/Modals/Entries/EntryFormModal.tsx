@@ -172,6 +172,7 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
       <DialogContent
         showCloseButton={false}
         className="max-w-3xl w-[90vw]  max-h-[50vh] overflow-y-auto"
+        onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
           <div className="flex justify-between items-center">

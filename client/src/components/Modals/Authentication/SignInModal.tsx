@@ -94,7 +94,7 @@ export function SignInModal({
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </Field>
-              <div>
+              <div className="flex flex-col gap-2">
                 <Field>
                   <FieldLabel>Password*</FieldLabel>
                   <div className="relative">
@@ -121,7 +121,7 @@ export function SignInModal({
                     </button>
                   </div>
                 </Field>
-                <div className="flex justify-end text-sm text-muted-foreground hover:text-primary cursor-pointer">
+                <div className="flex justify-start text-sm  hover:text-primary cursor-pointer">
                   <span
                     onClick={() => {
                       onOpenChange(false);

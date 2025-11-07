@@ -1,6 +1,13 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+.domine-400 {
+  font-family: "Domine", serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
 @custom-variant dark (&:is(.dark, .dark *));
 
 html,
@@ -8,6 +15,7 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
+  font-family: "Domine", serif;
 }
 
 #root {

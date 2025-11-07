@@ -241,7 +241,7 @@ function Content() {
   return user ? (
     <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">
       <div className="max-w-2xl w-full flex flex-row items-center justify-between">
-        <p className="text-3xl font-bold text-black dark:text-white">
+        <p className="text-2xl font-bold text-black dark:text-white">
           Hi{user ? `, ${user.name}` : ""}!
         </p>
         <div className="flex flex-row items-center justify-end gap-2 ">

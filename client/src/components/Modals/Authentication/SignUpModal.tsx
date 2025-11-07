@@ -13,6 +13,7 @@ import { EyeIcon, EyeClosedIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import SocialMediaAuth from "./SocialMediaAuth";
+import { resetViewport } from "@/utils/utils";
 
 export function SignUpModal({
   open,
@@ -54,6 +55,7 @@ export function SignUpModal({
     try {
       await signUp(name, email, password);
       onOpenChange(false);
+      resetViewport();
       toast.success(
         "Signed up successfully! Please confirm your email to continue."
       );

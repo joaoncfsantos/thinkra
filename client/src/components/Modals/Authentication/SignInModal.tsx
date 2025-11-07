@@ -13,6 +13,7 @@ import { EyeIcon, EyeClosedIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import SocialMediaAuth from "./SocialMediaAuth";
+import { resetViewport } from "@/utils/utils";
 
 export function SignInModal({
   open,
@@ -48,6 +49,7 @@ export function SignInModal({
     try {
       await signIn(email, password);
       onOpenChange(false);
+      resetViewport();
       toast.success("Signed in successfully!");
       setEmail("");
       setPassword("");

@@ -17,6 +17,7 @@ import {
 import { Plus, CalendarIcon, X } from "lucide-react";
 import { AudioRecorder } from "@/components/AudioRecorder";
 import { toast } from "sonner";
+import { resetViewport } from "@/utils/utils";
 
 interface EntryFormModalProps {
   open: boolean;
@@ -146,10 +147,12 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
     });
 
     resetForm();
+    resetViewport();
   };
 
   const handleCancel = () => {
     resetForm();
+    resetViewport();
   };
 
   const resetForm = () => {
@@ -161,6 +164,7 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
     setGains([""]);
     setErrors({});
     onOpenChange(false);
+    resetViewport();
   };
 
   return (

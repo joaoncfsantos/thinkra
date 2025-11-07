@@ -11,6 +11,7 @@ import { Field, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+import { resetViewport } from "@/utils/utils";
 
 export function ForgotPasswordModal({
   open,
@@ -46,6 +47,7 @@ export function ForgotPasswordModal({
     }
     toast.success("Password reset email sent!");
     onOpenChange(false);
+    resetViewport();
     setEmail("");
   };
 

@@ -11,6 +11,7 @@ import { Field, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+import { resetViewport } from "@/utils/utils";
 
 export function ResetPasswordModal({
   open,
@@ -49,6 +50,7 @@ export function ResetPasswordModal({
     }
     toast.success("Password reset successful!");
     onOpenChange(false);
+    resetViewport();
     setPassword("");
   };
 

@@ -6,6 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { resetViewport } from "@/utils/utils";
 
 interface DeleteConfirmationModalProps {
   open: boolean;
@@ -27,10 +28,12 @@ export const DeleteConfirmationModal: React.FC<
   const handleConfirm = () => {
     onConfirm();
     onOpenChange(false);
+    resetViewport();
   };
 
   const handleCancel = () => {
     onOpenChange(false);
+    resetViewport();
   };
 
   return (

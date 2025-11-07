@@ -12,7 +12,7 @@ export default function LandingPage() {
   return (
     <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">
       <h1 className="text-3xl text-center font-bold text-black dark:text-white">
-        Welcome to <br /> Gap & Gain
+        Welcome to Thinkra
       </h1>
       <p className="text-lg text-center text-black dark:text-white">
         Get started with your daily journal and track your progress.

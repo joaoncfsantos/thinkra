@@ -59,6 +59,7 @@ export function ResetPasswordModal({
       <DialogContent
         showCloseButton={false}
         className="max-w-[calc(100%-1rem)] sm:max-w-md"
+        onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader className="text-center space-y-2">
           <DialogTitle className="text-2xl text-neutral-900 dark:text-white break-words">

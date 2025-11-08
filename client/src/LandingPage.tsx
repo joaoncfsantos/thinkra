@@ -3,6 +3,7 @@ import { SignInModal } from "./components/Modals/Authentication/SignInModal";
 import { SignUpModal } from "./components/Modals/Authentication/SignUpModal";
 import { Button } from "./components/ui/button";
 import { useState } from "react";
+import { motion } from "motion/react";
 
 export default function LandingPage() {
   const [showSignInModal, setShowSignInModal] = useState(false);
@@ -10,20 +11,36 @@ export default function LandingPage() {
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
 
   return (
-    <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">
-      <h1 className="text-3xl text-center font-bold text-black dark:text-white">
-        Welcome to Thinkra
-      </h1>
-      <p className="text-lg text-center text-black dark:text-white">
-        Get started with your daily journal and track your progress.
-      </p>
-      <Button
-        onClick={() => {
-          setShowSignInModal(true);
-        }}
+    <motion.div className="w-full flex flex-col items-center justify-center space-y-6 p-4">
+      <motion.h1
+        className="text-3xl text-center font-bold text-black dark:text-white"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeInOut" }}
       >
-        Start now!
-      </Button>
+        Welcome to Thinkra
+      </motion.h1>
+      <motion.p
+        className="text-lg text-center text-black dark:text-white"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeInOut", delay: 0.2 }}
+      >
+        Get started with your daily journal and track your progress.
+      </motion.p>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeInOut", delay: 0.2 }}
+      >
+        <Button
+          onClick={() => {
+            setShowSignInModal(true);
+          }}
+        >
+          Start now!
+        </Button>
+      </motion.div>
       <SignInModal
         open={showSignInModal}
         onOpenChange={setShowSignInModal}
@@ -46,6 +63,6 @@ export default function LandingPage() {
           setShowSignInModal(true);
         }}
       />
-    </div>
+    </motion.div>
   );
 }

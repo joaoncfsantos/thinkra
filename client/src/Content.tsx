@@ -11,6 +11,7 @@ import { Spinner } from "./components/ui/shadcn-io/spinner";
 
 import { toast } from "sonner";
 import { useAuth } from "./context/AuthContext";
+import { motion } from "motion/react";
 
 function Content() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -240,7 +241,12 @@ function Content() {
 
   return user ? (
     <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">
-      <div className="max-w-2xl w-full flex flex-row items-center justify-between">
+      <motion.div
+        className="max-w-2xl w-full flex flex-row items-center justify-between"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, ease: "easeInOut", delay: 0.2 }}
+      >
         <p className="text-2xl font-bold text-black dark:text-white">
           Hi{user ? `, ${user.name}` : ""}!
         </p>
@@ -256,7 +262,7 @@ function Content() {
             )}
           </Button>
         </div>
-      </div>
+      </motion.div>
 
       <EntryFormModal
         open={isModalOpen}
@@ -276,7 +282,13 @@ function Content() {
           </div>
         ) : dailyEntries.length > 0 ? (
           dailyEntries.map((entry) => (
-            <div className="mb-4" key={entry.id}>
+            <motion.div
+              className="mb-4"
+              key={entry.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeInOut", delay: 0.2 }}
+            >
               <DailyCard
                 date={entry.date}
                 goals={entry.goals}
@@ -287,7 +299,7 @@ function Content() {
                   handleUpdateDailyEntry(entry.id, newGoals, newGains)
                 }
               />
-            </div>
+            </motion.div>
           ))
         ) : (
           <div className="text-muted-foreground text-center text-sm py-4">

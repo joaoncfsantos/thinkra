@@ -6,12 +6,13 @@ import LandingPage from "./LandingPage";
 
 import type { DailyEntry } from "./interfaces/DailyEntry";
 import { Button } from "./components/ui/button";
-import { NotebookPen } from "lucide-react";
+import { NotebookPen, RefreshCcw } from "lucide-react";
 import { Spinner } from "./components/ui/shadcn-io/spinner";
 
 import { toast } from "sonner";
 import { useAuth } from "./context/AuthContext";
 import { motion } from "motion/react";
+import { resetViewport } from "./utils/utils";
 
 function Content() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -239,6 +240,11 @@ function Content() {
     }
   };
 
+  const handleRefreshEntries = async () => {
+    window.location.reload();
+    resetViewport();
+  };
+
   return user ? (
     <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">
       <motion.div
@@ -251,6 +257,12 @@ function Content() {
           Hi{user ? `, ${user.name}` : ""}!
         </p>
         <div className="flex flex-row items-center justify-end gap-2 ">
+          <Button
+            onClick={() => handleRefreshEntries()}
+            disabled={isCreatingEntry}
+          >
+            <RefreshCcw className="size-4" />
+          </Button>
           <Button
             onClick={() => setIsModalOpen(true)}
             disabled={isCreatingEntry}

@@ -21,7 +21,7 @@ function Content() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
 
-  const { user, session } = useAuth(); // Get session for API calls
+  const { user, session, loading } = useAuth(); // Get session for API calls
   const {
     entries: dailyEntries,
     isLoadingEntries,
@@ -161,6 +161,10 @@ function Content() {
     window.location.reload();
     resetViewport();
   };
+
+  if (loading) {
+    return <></>;
+  }
 
   return user ? (
     <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">

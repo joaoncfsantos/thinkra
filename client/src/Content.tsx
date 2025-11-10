@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { DailyCard } from "./components/DailyCard";
 import { EntryFormModal } from "./components/Modals/Entries/EntryFormModal";
 import { DeleteConfirmationModal } from "./components/Modals/Entries/DeleteConfirmationModal";
 import LandingPage from "./LandingPage";
 
-import type { DailyEntry } from "./interfaces/DailyEntry";
 import { Button } from "./components/ui/button";
 import { NotebookPen, RefreshCcw } from "lucide-react";
 import { Spinner } from "./components/ui/shadcn-io/spinner";
@@ -13,57 +12,25 @@ import { toast } from "sonner";
 import { useAuth } from "./context/AuthContext";
 import { motion } from "motion/react";
 import { resetViewport } from "./utils/utils";
+import { useEntries } from "./hooks/useEntries";
 
 function Content() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
-  const [dailyEntries, setDailyEntries] = useState<DailyEntry[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
-  const [isLoadingEntries, setIsLoadingEntries] = useState(false);
 
-  const [isCreatingEntry, setIsCreatingEntry] = useState(false);
-
-  const { user } = useAuth();
-
-  const fetchEntries = async () => {
-    if (!user?.token) {
-      console.log("No token found");
-      return;
-    }
-
-    setIsLoadingEntries(true);
-
-    try {
-      const API_URL = import.meta.env.VITE_API_URL;
-
-      const response = await fetch(`${API_URL}/api/daily-entry`, {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      setDailyEntries(data as DailyEntry[]);
-    } catch (error) {
-      console.error("Failed to fetch entries:", error);
-    } finally {
-      setIsLoadingEntries(false);
-    }
-  };
-
-  useEffect(() => {
-    if (user) {
-      fetchEntries();
-    }
-  }, [user]);
+  const { user, session, loading } = useAuth(); // Get session for API calls
+  const {
+    entries: dailyEntries,
+    isLoadingEntries,
+    //refetchEntries,
+    createEntry,
+    isCreatingEntry,
+    deleteEntry,
+    updateEntry,
+  } = useEntries();
 
   const handleAudioSubmission = async (audioBlob: Blob) => {
     const audioUrl = URL.createObjectURL(audioBlob);
@@ -79,6 +46,9 @@ function Content() {
       const API_URL = import.meta.env.VITE_API_URL;
       const r = await fetch(`${API_URL}/api/transcribe`, {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
         body: fd,
       });
 
@@ -106,14 +76,15 @@ function Content() {
         return;
       }
 
-      await handleCreateDailyEntry(
-        {
-          date: new Date().toISOString().split("T")[0],
-          goals: data.result.goals || [],
-          gains: data.result.gains || [],
-        },
-        true
-      );
+      // Create entry directly through Supabase
+      await createEntry({
+        date: new Date().toISOString().split("T")[0],
+        goals: data.result.goals || [],
+        gains: data.result.gains || [],
+      });
+
+      setIsModalOpen(false);
+      toast.success("Entry created successfully!");
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Failed to transcribe audio"
@@ -131,42 +102,20 @@ function Content() {
     },
     closeModal: boolean = true
   ) => {
-    setIsCreatingEntry(true);
-
     try {
-      const API_URL = import.meta.env.VITE_API_URL;
-
-      const dateString = formData.date.includes("/")
-        ? new Date(formData.date).toISOString().split("T")[0]
-        : formData.date;
-
-      const response = await fetch(`${API_URL}/api/daily-entry`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${user?.token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          date: dateString,
-          goals: formData.goals,
-          gains: formData.gains,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      await fetchEntries();
+      await createEntry(formData);
 
       if (closeModal) {
         setIsModalOpen(false);
       }
+
+      toast.success("Entry created successfully!");
     } catch (error) {
       console.error("Failed to create entry:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create entry"
+      );
       throw error;
-    } finally {
-      setIsCreatingEntry(false);
     }
   };
 
@@ -179,23 +128,12 @@ function Content() {
     if (!entryToDelete) return;
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL;
-      const response = await fetch(
-        `${API_URL}/api/daily-entry/${entryToDelete}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${user?.token}`,
-          },
-        }
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      await fetchEntries();
+      await deleteEntry(entryToDelete);
+      toast.success("Entry deleted successfully!");
       setDeleteModalOpen(false);
     } catch (error) {
       console.error("Failed to delete entry:", error);
+      toast.error("Failed to delete entry");
     } finally {
       setEntryToDelete(null);
     }
@@ -207,35 +145,14 @@ function Content() {
     newGains: string[]
   ) => {
     try {
-      const API_URL = import.meta.env.VITE_API_URL;
-      const response = await fetch(`${API_URL}/api/daily-entry/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user?.token}`,
-        },
-        body: JSON.stringify({
-          goals: newGoals,
-          gains: newGains,
-        }),
+      await updateEntry({
+        id,
+        goals: newGoals,
+        gains: newGains,
       });
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error("Entry not found");
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (result.modified) {
-        await fetchEntries();
-      }
-
-      return result;
+      toast.success("Entry updated successfully!");
     } catch (error) {
-      console.error("Failed to update entry:", error);
+      toast.error("Failed to update entry");
       throw error;
     }
   };
@@ -244,6 +161,10 @@ function Content() {
     window.location.reload();
     resetViewport();
   };
+
+  if (loading) {
+    return <></>;
+  }
 
   return user ? (
     <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">
@@ -254,7 +175,7 @@ function Content() {
         transition={{ duration: 0.5, ease: "easeInOut", delay: 0.2 }}
       >
         <p className="text-2xl font-bold text-black dark:text-white">
-          Hi{user ? `, ${user.name}` : ""}!
+          Hi{user ? `, ${user.user_metadata.name}` : ""}!
         </p>
         <div className="flex flex-row items-center justify-end gap-2 ">
           <Button

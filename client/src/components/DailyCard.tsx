@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
 import { toast } from "sonner";
+import { Spinner } from "./ui/shadcn-io/spinner";
 
 export function DailyCard({
   id,
@@ -14,6 +15,7 @@ export function DailyCard({
   onDelete,
 }: DailyCardProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [editableGoals, setEditableGoals] = useState(goals);
   const [editableGains, setEditableGains] = useState(gains);
   const [errors, setErrors] = useState<{ goals?: string; gains?: string }>({});
@@ -22,27 +24,33 @@ export function DailyCard({
     setIsEditing(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const isValid = validateForm();
     if (!isValid) {
       return;
     }
 
-    setIsEditing(false);
-
     //Clean empty goals and gains from the array
     const cleanGoals = editableGoals.filter((goal) => goal.trim() !== "");
     const cleanGains = editableGains.filter((gain) => gain.trim() !== "");
 
-    setEditableGoals(cleanGoals);
-    setEditableGains(cleanGains);
-
-    // Clear errors on successful save
-    setErrors({});
-
     // Call the onUpdate callback to save changes to parent component
     if (onUpdate) {
-      onUpdate(cleanGoals, cleanGains);
+      setIsSaving(true);
+      try {
+        await onUpdate(cleanGoals, cleanGains);
+
+        // Only update local state and exit edit mode if successful
+        setEditableGoals(cleanGoals);
+        setEditableGains(cleanGains);
+        setIsEditing(false);
+        setErrors({});
+      } catch (error) {
+        toast.error("Failed to save changes. Please try again.");
+        // Keep editing mode active so user can retry
+      } finally {
+        setIsSaving(false);
+      }
     }
   };
 
@@ -121,9 +129,14 @@ export function DailyCard({
                 onClick={handleSave}
                 variant="outline"
                 size="icon-lg"
+                disabled={isSaving}
                 className="bg-green-600 text-white hover:bg-green-700 hover:text-white dark:bg-green-700 dark:hover:bg-green-800 dark:hover:text-white"
               >
-                <Save className="w-4 h-4" />
+                {isSaving ? (
+                  <Spinner className="w-4 h-4" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
               </Button>
             </>
           ) : (
@@ -257,6 +270,6 @@ interface DailyCardProps {
   date: string;
   goals: string[];
   gains: string[];
-  onUpdate?: (goals: string[], gains: string[]) => void;
+  onUpdate?: (goals: string[], gains: string[]) => Promise<void>; // Make it return a Promise
   onDelete?: (id: string) => void;
 }

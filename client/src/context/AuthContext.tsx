@@ -1,10 +1,12 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import type { User } from "@/interfaces/User";
+import { supabase } from "@/utils/supabase";
+import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
 
 interface AuthContextType {
-  user: User | null;
+  user: SupabaseUser | null;
+  session: Session | null;
   signIn: (email: string, password: string) => Promise<void>;
-  signOut: () => void;
+  signOut: () => Promise<void>;
   signUp: (name: string, email: string, password: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (password: string) => Promise<void>;
@@ -14,131 +16,88 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored session on app load
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        // Validate that the token exists and is not empty
-        if (parsedUser.token && parsedUser.token.trim() !== "") {
-          setUser(parsedUser);
-        } else {
-          // Clear invalid stored user
-          localStorage.removeItem("user");
-        }
-      } catch (error) {
-        console.error("Error parsing stored user:", error);
-        localStorage.removeItem("user");
-      }
-    }
-    setLoading(false);
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const API_URL = import.meta.env.VITE_API_URL;
-    const response = await fetch(`${API_URL}/api/sign-in`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
 
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error);
+    if (error) throw error;
 
-    const userData = {
-      id: data.user.id,
-      email: data.user.email,
-      name: data.user.user_metadata?.name,
-      token: data.session.access_token,
-    };
-
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
+    setUser(data.user);
+    setSession(data.session);
   };
 
-  const signOut = () => {
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+
     setUser(null);
-    localStorage.removeItem("user");
+    setSession(null);
   };
 
   const signUp = async (name: string, email: string, password: string) => {
-    const API_URL = import.meta.env.VITE_API_URL;
-    const response = await fetch(`${API_URL}/api/sign-up`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name, // Store name in user metadata
+        },
       },
-      body: JSON.stringify({ name, email, password }),
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error);
 
-    if (data.user && data.session) {
-      const userData = {
-        id: data.user.id,
-        email: data.user.email,
-        name: data.user.user_metadata?.name,
-        token: data.session.access_token,
-      };
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
-    }
+    if (error) throw error;
+
+    setUser(data.user);
+    setSession(data.session);
   };
 
   const forgotPassword = async (email: string) => {
-    const API_URL = import.meta.env.VITE_API_URL;
-    const response = await fetch(`${API_URL}/api/forgot-password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error);
+
+    if (error) throw error;
   };
 
   const resetPassword = async (password: string) => {
-    // Get tokens from session storage
-    const storedTokens = sessionStorage.getItem("reset_tokens");
-    const tokens = storedTokens ? JSON.parse(storedTokens) : null;
-
-    if (!tokens?.access_token) {
-      throw new Error("No reset token found");
-    }
-
-    // Import the supabase client
-    const { default: supabase } = await import("@/utils/supabase");
-
-    // Set the session with the recovery tokens
-    const { error: sessionError } = await supabase.auth.setSession({
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
-    });
-
-    if (sessionError) {
-      throw new Error(`Failed to set session: ${sessionError.message}`);
-    }
-
-    // Now update the password
     const { error } = await supabase.auth.updateUser({
-      password: password,
+      password,
     });
 
-    if (error) {
-      throw new Error(`Failed to reset password: ${error.message}`);
-    }
-
-    // Clear the temporary tokens
-    sessionStorage.removeItem("reset_tokens");
+    if (error) throw error;
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        session,
         signIn,
         signOut,
         signUp,

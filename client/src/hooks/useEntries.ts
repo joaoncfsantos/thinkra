@@ -132,7 +132,7 @@ export const useEntries = () => {
 
       return { previousEntries };
     },
-    onError: (err, variables, context) => {
+    onError: (_err, _variables, context) => {
       if (context?.previousEntries) {
         queryClient.setQueryData(
           ["daily-entries", user?.id],

@@ -1,37 +1,35 @@
 import express from "express";
-import multer from "multer";
+import { authenticateUser, AuthenticatedRequest } from "../middleware/auth";
 import { transcribeAudio } from "../services/transcriptionService";
+import multer from "multer";
 
 const router = express.Router();
-const upload = multer({
-  dest: "uploads/",
-  limits: { fileSize: 25 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowedMimes = [
-      "audio/webm",
-      "audio/wav",
-      "audio/mpeg",
-      "audio/mp4",
-      "audio/ogg",
-    ];
-    if (allowedMimes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error("Invalid file type. Only audio files are allowed."));
+const upload = multer({ dest: "uploads/" });
+
+router.use(authenticateUser);
+
+router.post(
+  "/transcribe",
+  upload.single("audio"),
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No audio file provided" });
+      }
+
+      const { text, result } = await transcribeAudio(req.file);
+
+      res.json({
+        text,
+        result,
+      });
+    } catch (err: any) {
+      console.error("Transcription error:", err.message);
+      res.status(500).json({
+        error: err.message || "Failed to transcribe audio",
+      });
     }
-  },
-});
-
-router.post("/transcribe", upload.single("audio"), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-
-    const result = await transcribeAudio(req.file);
-    res.json(result);
-  } catch (err: any) {
-    console.error("Transcription error:", err.message);
-    res.status(500).json({ error: "Transcription failed" });
   }
-});
+);
 
 export default router;

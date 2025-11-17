@@ -7,6 +7,7 @@ import LandingPage from "./LandingPage";
 import { Button } from "./components/ui/button";
 import { NotebookPen, RefreshCcw } from "lucide-react";
 import { Spinner } from "./components/ui/shadcn-io/spinner";
+import { Calendar } from "./components/ui/calendar";
 
 import { toast } from "sonner";
 import { useAuth } from "./context/AuthContext";
@@ -166,8 +167,24 @@ function Content() {
     return <></>;
   }
 
+  const datesWithEntries = dailyEntries.map((e) => new Date(e.date));
+
   return user ? (
     <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">
+      <Calendar
+        mode="single"
+        onSelect={(date) => console.log(date)}
+        disabled={{ after: new Date() }}
+        modifiers={{
+          hasEntry: datesWithEntries,
+        }}
+        modifiersClassNames={{
+          hasEntry: "bg-blue-100 dark:bg-blue-900 font-bold rounded-lg",
+        }}
+        classNames={{
+          today: "",
+        }}
+      />
       <motion.div
         className="max-w-2xl w-full flex flex-row items-center justify-between"
         initial={{ opacity: 0 }}

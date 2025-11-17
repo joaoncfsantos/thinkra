@@ -21,6 +21,7 @@ function Content() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const { user, session, loading } = useAuth(); // Get session for API calls
   const {
@@ -169,22 +170,59 @@ function Content() {
 
   const datesWithEntries = dailyEntries.map((e) => new Date(e.date));
 
+  const filteredEntries = selectedDate
+    ? dailyEntries.filter((entry) => {
+        const entryDate = new Date(entry.date);
+        return (
+          entryDate.getFullYear() === selectedDate.getFullYear() &&
+          entryDate.getMonth() === selectedDate.getMonth() &&
+          entryDate.getDate() === selectedDate.getDate()
+        );
+      })
+    : dailyEntries;
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) {
+      setSelectedDate(null);
+      return;
+    }
+
+    const isSameDate =
+      selectedDate &&
+      date.getFullYear() === selectedDate.getFullYear() &&
+      date.getMonth() === selectedDate.getMonth() &&
+      date.getDate() === selectedDate.getDate();
+
+    setSelectedDate(isSameDate ? null : date);
+  };
+
   return user ? (
     <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">
-      <Calendar
-        mode="single"
-        onSelect={(date) => console.log(date)}
-        disabled={{ after: new Date() }}
-        modifiers={{
-          hasEntry: datesWithEntries,
-        }}
-        modifiersClassNames={{
-          hasEntry: "bg-blue-100 dark:bg-blue-900 font-bold rounded-lg",
-        }}
-        classNames={{
-          today: "",
-        }}
-      />
+      <div className="flex flex-col gap-2">
+        <Button
+          variant="outline"
+          onClick={() => setSelectedDate(null)}
+          className="flex-end"
+        >
+          Clear Filter
+        </Button>
+
+        <Calendar
+          mode="single"
+          selected={selectedDate ?? undefined}
+          onSelect={handleDateSelect}
+          disabled={{ after: new Date() }}
+          modifiers={{
+            hasEntry: datesWithEntries,
+          }}
+          modifiersClassNames={{
+            hasEntry: "bg-neutral-100 dark:bg-neutral-800 font-bold rounded-lg",
+          }}
+          classNames={{
+            today: "",
+          }}
+        />
+      </div>
       <motion.div
         className="max-w-2xl w-full flex flex-row items-center justify-between"
         initial={{ opacity: 0 }}
@@ -230,8 +268,8 @@ function Content() {
               className="h-8 w-8 text-muted-foreground"
             />
           </div>
-        ) : dailyEntries.length > 0 ? (
-          dailyEntries.map((entry) => (
+        ) : filteredEntries.length > 0 ? (
+          filteredEntries.map((entry) => (
             <motion.div
               className="mb-4"
               key={entry.id}
@@ -253,7 +291,9 @@ function Content() {
           ))
         ) : (
           <div className="text-muted-foreground text-center text-sm py-4">
-            No entries found. Start by creating a new entry!
+            {selectedDate
+              ? "No entries found for this date."
+              : "No entries found. Start by creating a new entry!"}
           </div>
         )}
       </div>

@@ -248,112 +248,112 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
 
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-4 text-neutral-900 dark:text-white "
+          className="flex flex-col gap-8 text-neutral-900 dark:text-white"
         >
           {/* Gains Section */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <Label>Gains</Label>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-xs font-bold text-green-600 dark:bg-green-900/30 dark:text-green-400">
+                1
+              </span>
+              <Label className="text-base font-semibold">
+                What were your gains?
+              </Label>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3 pl-8">
               {gains.map((gain, index) => (
-                <div key={index} className="flex items-center space-x-2">
+                <div key={index} className="flex items-center gap-2">
                   <Input
                     placeholder={`Gain ${index + 1}`}
                     value={gain}
                     onChange={(e) => updateGain(index, e.target.value)}
-                    className={`dark:border-neutral-700 ${
-                      errors.gains && "!border-red-700 border-2"
+                    className={`bg-neutral-50 dark:bg-neutral-800/50 dark:border-neutral-700 ${
+                      errors.gains && "!border-red-500 ring-1 ring-red-500"
                     }`}
                   />
-                  {
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon-lg"
-                      onClick={() => removeGain(index)}
-                      className="px-2"
-                      disabled={gains.length === 1}
-                    >
-                      <X className="size-3.5" />
-                    </Button>
-                  }
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeGain(index)}
+                    className="text-neutral-400 hover:text-red-500"
+                    disabled={gains.length === 1}
+                  >
+                    <X className="size-4" />
+                  </Button>
                 </div>
               ))}
-            </div>
-            <div className="flex justify-center">
               <Button
                 variant="outline"
-                size="icon"
-                className="rounded-full"
+                size="sm"
+                className="mt-2 h-8 rounded-full border-dashed text-xs"
                 type="button"
                 onClick={addGain}
               >
-                <Plus />
+                <Plus className="mr-1 size-3" /> Add another gain
               </Button>
             </div>
           </div>
 
           {/* Goals Section */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <Label>Goals</Label>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                2
+              </span>
+              <Label className="text-base font-semibold">
+                What are your goals?
+              </Label>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3 pl-8">
               {goals.map((goal, index) => (
-                <div key={index} className="flex items-center space-x-2">
+                <div key={index} className="flex items-center gap-2">
                   <Input
                     placeholder={`Goal ${index + 1}`}
                     value={goal}
                     onChange={(e) => updateGoal(index, e.target.value)}
-                    className={`dark:border-neutral-700 ${
-                      errors.goals && "!border-red-700 border-2"
+                    className={`bg-neutral-50 dark:bg-neutral-800/50 dark:border-neutral-700 ${
+                      errors.goals && "!border-red-500 ring-1 ring-red-500"
                     }`}
                   />
-
                   <Button
                     type="button"
-                    variant="outline"
-                    size="icon-lg"
+                    variant="ghost"
+                    size="icon"
                     onClick={() => removeGoal(index)}
-                    className="px-2"
+                    className="text-neutral-400 hover:text-red-500"
                     disabled={goals.length === 1}
                   >
-                    <X className="size-3.5" />
+                    <X className="size-4" />
                   </Button>
                 </div>
               ))}
-            </div>
-            <div className="flex justify-center">
               <Button
                 type="button"
                 variant="outline"
-                size="icon"
-                className="rounded-full"
+                size="sm"
+                className="mt-2 h-8 rounded-full border-dashed text-xs"
                 onClick={addGoal}
               >
-                <Plus />
+                <Plus className="mr-1 size-3" /> Add another goal
               </Button>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-row items-center justify-between">
+          <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between pt-4 border-t border-neutral-100 dark:border-neutral-800">
             <AudioRecorder
               onRecordingComplete={handleAudioSubmission}
               isTranscribing={isTranscribing}
             />
 
-            <div className="flex justify-end space-x-2">
-              <Button
-                className="text-neutral-900 dark:text-white"
-                type="button"
-                variant="outline"
-                onClick={handleCancel}
-              >
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="ghost" onClick={handleCancel}>
                 Cancel
               </Button>
-              <Button type="submit">Create Entry</Button>
+              <Button type="submit" className="px-8">
+                Create Entry
+              </Button>
             </div>
           </div>
         </form>

@@ -13,8 +13,8 @@ const OVERLAY_CONFIG = {
     COLOR: "text-black dark:text-white",
   },
   BACKGROUND: {
-    OVERLAY_COLOR: "bg-white/80 dark:bg-black/80",
-    BACKDROP_BLUR: "backdrop-blur-sm",
+    OVERLAY_COLOR: "bg-white/90 dark:bg-neutral-950/90",
+    BACKDROP_BLUR: "backdrop-blur-xl",
   },
   BUTTON: {
     SIZE: "w-16 h-16",

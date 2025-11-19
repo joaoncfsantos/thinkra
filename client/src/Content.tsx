@@ -21,7 +21,7 @@ function Content() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
 
   const { user, session, loading } = useAuth(); // Get session for API calls
   const {
@@ -170,30 +170,19 @@ function Content() {
 
   const datesWithEntries = dailyEntries.map((e) => new Date(e.date));
 
-  const filteredEntries = selectedDate
-    ? dailyEntries.filter((entry) => {
-        const entryDate = new Date(entry.date);
-        return (
-          entryDate.getFullYear() === selectedDate.getFullYear() &&
-          entryDate.getMonth() === selectedDate.getMonth() &&
-          entryDate.getDate() === selectedDate.getDate()
-        );
-      })
-    : dailyEntries;
+  const filteredEntries =
+    selectedDates.length > 0
+      ? dailyEntries.filter((entry) =>
+          selectedDates.some(
+            (selectedDate) =>
+              new Date(entry.date).toDateString() ===
+              selectedDate.toDateString()
+          )
+        )
+      : dailyEntries;
 
-  const handleDateSelect = (date: Date | undefined) => {
-    if (!date) {
-      setSelectedDate(null);
-      return;
-    }
-
-    const isSameDate =
-      selectedDate &&
-      date.getFullYear() === selectedDate.getFullYear() &&
-      date.getMonth() === selectedDate.getMonth() &&
-      date.getDate() === selectedDate.getDate();
-
-    setSelectedDate(isSameDate ? null : date);
+  const handleDateSelect = (dates: Date[] | undefined) => {
+    setSelectedDates(dates || []);
   };
 
   return user ? (
@@ -258,7 +247,7 @@ function Content() {
             ))
           ) : (
             <div className="text-muted-foreground text-center text-sm py-4">
-              {selectedDate
+              {selectedDates.length > 0
                 ? "No entries found for this date."
                 : "No entries found. Start by creating a new entry!"}
             </div>
@@ -266,8 +255,8 @@ function Content() {
         </div>
         <div className="hidden sm:flex">
           <Calendar
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
+            selectedDates={selectedDates}
+            setSelectedDates={setSelectedDates}
             handleDateSelect={handleDateSelect}
             datesWithEntries={datesWithEntries}
           />

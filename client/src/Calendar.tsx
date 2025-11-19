@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "./components/ui/button";
 import { Calendar as CalendarComponent } from "./components/ui/calendar";
 
@@ -12,19 +13,33 @@ function Calendar({
   handleDateSelect: (dates: Date[] | undefined) => void;
   datesWithEntries: Date[];
 }) {
+  const [month, setMonth] = useState<Date>(new Date());
+
   return (
     <div className="flex flex-col gap-2">
-      <Button
-        variant="outline"
-        onClick={() => setSelectedDates([])}
-        className="flex-end text-neutral-900 dark:text-white"
-      >
-        Clear Filter ({selectedDates.length})
-      </Button>
+      <div className="flex flex-row gap-2 justify-between">
+        <Button
+          variant="outline"
+          onClick={() => setSelectedDates([])}
+          disabled={selectedDates.length === 0}
+          className="flex-end text-neutral-900 dark:text-white"
+        >
+          Clear Selected ({selectedDates.length})
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => setMonth(new Date())}
+          className="flex-end text-neutral-900 dark:text-white"
+        >
+          Today
+        </Button>
+      </div>
 
       <CalendarComponent
         className="border rounded-md"
         mode="multiple"
+        month={month}
+        onMonthChange={setMonth}
         selected={selectedDates}
         onSelect={handleDateSelect}
         disabled={{ after: new Date() }}

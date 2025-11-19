@@ -7,7 +7,7 @@ import LandingPage from "./LandingPage";
 import { Button } from "./components/ui/button";
 import { NotebookPen, RefreshCcw } from "lucide-react";
 import { Spinner } from "./components/ui/shadcn-io/spinner";
-import { Calendar } from "./components/ui/calendar";
+import Calendar from "./Calendar";
 
 import { toast } from "sonner";
 import { useAuth } from "./context/AuthContext";
@@ -198,69 +198,81 @@ function Content() {
 
   return user ? (
     <div className="w-full flex flex-col items-center justify-center space-y-6 p-4">
-      <div className="flex flex-col gap-2">
-        <Button
-          variant="outline"
-          onClick={() => setSelectedDate(null)}
-          className="flex-end text-neutral-900 dark:text-white"
-        >
-          Clear Filter
-        </Button>
-
-        <Calendar
-          mode="single"
-          selected={selectedDate ?? undefined}
-          onSelect={handleDateSelect}
-          disabled={{ after: new Date() }}
-          modifiers={{
-            hasEntry: datesWithEntries,
-          }}
-          modifiersClassNames={{
-            hasEntry: "bg-neutral-100 dark:bg-neutral-800 font-bold rounded-lg",
-          }}
-          classNames={{
-            today: "",
-            outside:
-              "!text-muted-foreground dark:text-muted-foreground opacity-50",
-            day: "text-neutral-900 dark:text-white",
-            disabled:
-              "!text-muted-foreground dark:!text-muted-foreground !opacity-50",
-            caption_label: "text-neutral-900 dark:text-white",
-            button_previous:
-              "text-neutral-900 dark:text-white size-(--cell-size) p-0 select-none hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-md flex items-center justify-center",
-            button_next:
-              "text-neutral-900 dark:text-white size-(--cell-size) p-0 select-none hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-md flex items-center justify-center",
-          }}
-        />
-      </div>
-      <motion.div
-        className="max-w-2xl w-full flex flex-row items-center justify-between"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, ease: "easeInOut", delay: 0.2 }}
-      >
-        <p className="text-2xl font-bold text-black dark:text-white">
-          Hi{user ? `, ${user.user_metadata.name}` : ""}!
-        </p>
-        <div className="flex flex-row items-center justify-end gap-2 ">
-          <Button
-            onClick={() => handleRefreshEntries()}
-            disabled={isCreatingEntry}
+      <div className="flex flex-row gap-6 w-full">
+        <div className="flex flex-col gap-2 flex-1">
+          <motion.div
+            className="px-1 w-full flex flex-row items-center justify-between"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, ease: "easeInOut", delay: 0.2 }}
           >
-            <RefreshCcw className="size-4" />
-          </Button>
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            disabled={isCreatingEntry}
-          >
-            {isCreatingEntry ? (
-              <Spinner variant="circle" className="h-4 w-4" />
-            ) : (
-              <NotebookPen className="size-4" />
-            )}
-          </Button>
+            <p className="text-2xl font-bold text-black dark:text-white">
+              Hi{user ? `, ${user.user_metadata.name}` : ""}!
+            </p>
+            <div className="flex flex-row items-center justify-end gap-2 ">
+              <Button
+                onClick={() => handleRefreshEntries()}
+                disabled={isCreatingEntry}
+              >
+                <RefreshCcw className="size-4" />
+              </Button>
+              <Button
+                onClick={() => setIsModalOpen(true)}
+                disabled={isCreatingEntry}
+              >
+                {isCreatingEntry ? (
+                  <Spinner variant="circle" className="h-4 w-4" />
+                ) : (
+                  <NotebookPen className="size-4" />
+                )}
+              </Button>
+            </div>
+          </motion.div>
+          {isLoadingEntries ? (
+            <div className="flex justify-center items-center py-8">
+              <Spinner
+                variant="circle"
+                className="h-8 w-8 text-muted-foreground"
+              />
+            </div>
+          ) : filteredEntries.length > 0 ? (
+            filteredEntries.map((entry) => (
+              <motion.div
+                className="mb-4"
+                key={entry.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: "easeInOut", delay: 0.2 }}
+              >
+                <DailyCard
+                  date={entry.date}
+                  goals={entry.goals}
+                  gains={entry.gains}
+                  id={entry.id}
+                  onDelete={handleDeleteRequest}
+                  onUpdate={(newGoals, newGains) =>
+                    handleUpdateDailyEntry(entry.id, newGoals, newGains)
+                  }
+                />
+              </motion.div>
+            ))
+          ) : (
+            <div className="text-muted-foreground text-center text-sm py-4">
+              {selectedDate
+                ? "No entries found for this date."
+                : "No entries found. Start by creating a new entry!"}
+            </div>
+          )}
         </div>
-      </motion.div>
+        <div className="hidden sm:flex">
+          <Calendar
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            handleDateSelect={handleDateSelect}
+            datesWithEntries={datesWithEntries}
+          />
+        </div>
+      </div>
 
       <EntryFormModal
         open={isModalOpen}
@@ -269,44 +281,6 @@ function Content() {
         handleAudioSubmission={handleAudioSubmission}
         isTranscribing={isTranscribing}
       />
-
-      <div className="w-full max-w-2xl">
-        {isLoadingEntries ? (
-          <div className="flex justify-center items-center py-8">
-            <Spinner
-              variant="circle"
-              className="h-8 w-8 text-muted-foreground"
-            />
-          </div>
-        ) : filteredEntries.length > 0 ? (
-          filteredEntries.map((entry) => (
-            <motion.div
-              className="mb-4"
-              key={entry.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: "easeInOut", delay: 0.2 }}
-            >
-              <DailyCard
-                date={entry.date}
-                goals={entry.goals}
-                gains={entry.gains}
-                id={entry.id}
-                onDelete={handleDeleteRequest}
-                onUpdate={(newGoals, newGains) =>
-                  handleUpdateDailyEntry(entry.id, newGoals, newGains)
-                }
-              />
-            </motion.div>
-          ))
-        ) : (
-          <div className="text-muted-foreground text-center text-sm py-4">
-            {selectedDate
-              ? "No entries found for this date."
-              : "No entries found. Start by creating a new entry!"}
-          </div>
-        )}
-      </div>
 
       <DeleteConfirmationModal
         open={deleteModalOpen}

@@ -116,10 +116,12 @@ export function DailyCard({
   });
 
   return (
-    <Card>
-      <CardHeader className="flex justify-between items-center">
-        <CardTitle className="text-lg font-bold">{formattedDate}</CardTitle>
-        <div className="flex gap-2">
+    <Card className="group relative overflow-hidden border-neutral-200 bg-white shadow-sm transition-all hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <CardTitle className="text-xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50">
+          {formattedDate}
+        </CardTitle>
+        <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100 sm:opacity-100">
           {isEditing ? (
             <>
               <Button onClick={handleCancel} variant="outline" size="icon-lg">
@@ -162,103 +164,117 @@ export function DailyCard({
         </div>
       </CardHeader>
 
-      <CardContent className="border-t pt-4">
-        <div className="mb-4">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="font-semibold">Gains:</h3>
+      <CardContent className="space-y-6">
+        <div>
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+              Gains
+            </h3>
           </div>
-          <ol className="list-decimal list-inside space-y-1">
+          <div className="space-y-3">
             {editableGains.map((gain, index) => (
-              <li key={index} className="flex items-center gap-2">
+              <div
+                key={index}
+                className="flex items-start gap-3 rounded-lg bg-neutral-50 p-3 text-neutral-700 dark:bg-neutral-800/50 dark:text-neutral-300"
+              >
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-green-100 text-xs font-bold text-green-600 dark:bg-green-900/30 dark:text-green-400">
+                  {index + 1}
+                </span>
                 {isEditing ? (
-                  <>
+                  <div className="flex w-full gap-2">
                     <Input
                       placeholder={`Gain ${index + 1}`}
                       value={gain}
                       onChange={(e) => handleGainChange(index, e.target.value)}
-                      className={`dark:border-neutral-700 ${
-                        errors.gains && "!border-red-700 border-2"
+                      className={`h-auto border-0 bg-transparent p-0 text-base focus-visible:ring-0 focus-visible:ring-offset-0 ${
+                        errors.gains && "text-red-500 placeholder:text-red-300"
                       }`}
                     />
                     <Button
                       onClick={() => removeGain(index)}
-                      variant="outline"
-                      size="icon-lg"
+                      variant="ghost"
+                      size="sm"
                       disabled={editableGains.length === 1}
+                      className="h-auto p-1 text-neutral-400 hover:text-red-500"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="h-4 w-4" />
                     </Button>
-                  </>
+                  </div>
                 ) : (
-                  <span className="first-letter:uppercase">
-                    {index + 1}.&nbsp;{gain}
-                  </span>
+                  <p className="text-base leading-relaxed">{gain}</p>
                 )}
-              </li>
-            ))}
-            {isEditing && (
-              <div className="flex justify-center">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full"
-                  onClick={addGain}
-                >
-                  <Plus />
-                </Button>
               </div>
-            )}
-          </ol>
+            ))}
+          </div>
+          {isEditing && (
+            <div className="mt-3 flex justify-center">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-full border-dashed px-4 text-xs"
+                onClick={addGain}
+              >
+                <Plus className="mr-1 h-3 w-3" /> Add Gain
+              </Button>
+            </div>
+          )}
         </div>
 
         <div>
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="font-semibold">Goals:</h3>
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+              Goals
+            </h3>
           </div>
-          <ol className="list-decimal list-inside space-y-1">
+          <div className="space-y-3">
             {editableGoals.map((goal, index) => (
-              <li key={index} className="flex items-center gap-2">
+              <div
+                key={index}
+                className="flex items-start gap-3 rounded-lg bg-neutral-50 p-3 text-neutral-700 dark:bg-neutral-800/50 dark:text-neutral-300"
+              >
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                  {index + 1}
+                </span>
                 {isEditing ? (
-                  <>
+                  <div className="flex w-full gap-2">
                     <Input
                       placeholder={`Goal ${index + 1}`}
                       value={goal}
                       onChange={(e) => handleGoalChange(index, e.target.value)}
-                      className={`dark:border-neutral-700 ${
-                        errors.goals && "!border-red-700 border-2"
+                      className={`h-auto border-0 bg-transparent p-0 text-base focus-visible:ring-0 focus-visible:ring-offset-0 ${
+                        errors.goals && "text-red-500 placeholder:text-red-300"
                       }`}
                     />
                     <Button
                       onClick={() => removeGoal(index)}
-                      variant="outline"
-                      size="icon-lg"
+                      variant="ghost"
+                      size="sm"
                       disabled={editableGoals.length === 1}
+                      className="h-auto p-1 text-neutral-400 hover:text-red-500"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="h-4 w-4" />
                     </Button>
-                  </>
+                  </div>
                 ) : (
-                  <span className="first-letter:uppercase">
-                    {index + 1}.&nbsp;{goal}
-                  </span>
+                  <p className="text-base leading-relaxed">{goal}</p>
                 )}
-              </li>
-            ))}
-            {isEditing && (
-              <div className="flex justify-center">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full"
-                  onClick={addGoal}
-                >
-                  <Plus />
-                </Button>
               </div>
-            )}
-          </ol>
+            ))}
+          </div>
+          {isEditing && (
+            <div className="mt-3 flex justify-center">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-full border-dashed px-4 text-xs"
+                onClick={addGoal}
+              >
+                <Plus className="mr-1 h-3 w-3" /> Add Goal
+              </Button>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

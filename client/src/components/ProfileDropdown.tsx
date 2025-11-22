@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { SignInModal } from "./Modals/Authentication/SignInModal";
 import { SignUpModal } from "./Modals/Authentication/SignUpModal";
 import { ForgotPasswordModal } from "./Modals/Authentication/ForgotPasswordModal";
+import { SettingsModal } from "./Modals/SettingsModal";
 
 export function ProfileDropdown() {
   const { user, signOut } = useAuth();
@@ -20,6 +21,7 @@ export function ProfileDropdown() {
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   return (
     <>
       <DropdownMenu>
@@ -31,7 +33,11 @@ export function ProfileDropdown() {
         <DropdownMenuContent>
           {user ? (
             <>
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setShowSettingsModal(true);
+                }}
+              >
                 <Settings className="w-4 h-4" />
                 Settings
               </DropdownMenuItem>
@@ -74,6 +80,10 @@ export function ProfileDropdown() {
         open={showForgotPasswordModal}
         onOpenChange={setShowForgotPasswordModal}
         onSwitchToSignIn={() => setShowSignInModal(true)}
+      />
+      <SettingsModal
+        open={showSettingsModal}
+        onOpenChange={setShowSettingsModal}
       />
     </>
   );

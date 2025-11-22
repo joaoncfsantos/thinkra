@@ -117,7 +117,7 @@ export function DailyCard({
 
   return (
     <Card className="group relative overflow-hidden border-neutral-200 bg-white shadow-sm transition-all hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50">
           {formattedDate}
         </CardTitle>

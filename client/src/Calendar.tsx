@@ -18,27 +18,26 @@ function Calendar({
   const [month, setMonth] = useState<Date>(new Date());
 
   return (
-    <Card className="border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-      <CardHeader className="pb-2">
+    <Card className="border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900 gap-2">
+      <CardHeader className="">
         <CardTitle className="flex items-center justify-between text-lg font-semibold text-neutral-900 dark:text-white">
           <span className="flex items-center gap-2">
             <CalendarIcon className="h-5 w-5 text-neutral-500" />
             Filter by Date
           </span>
-          {selectedDates.length > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSelectedDates([])}
-              className="h-8 px-2 text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300"
-            >
-              Clear ({selectedDates.length})
-              <X className="ml-1 h-3 w-3" />
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={selectedDates.length === 0}
+            onClick={() => setSelectedDates([])}
+            className="h-8 px-2 text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300"
+          >
+            Clear ({selectedDates.length})
+            <X className="ml-1 h-3 w-3" />
+          </Button>
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-col items-center justify-center">
         <CalendarComponent
           className="p-0"
           mode="multiple"

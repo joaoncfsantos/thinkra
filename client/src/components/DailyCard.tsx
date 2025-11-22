@@ -121,7 +121,7 @@ export function DailyCard({
         <CardTitle className="text-xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50">
           {formattedDate}
         </CardTitle>
-        <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100 sm:opacity-100">
+        <div className="flex gap-2 opacity-100 transition-opacity">
           {isEditing ? (
             <>
               <Button onClick={handleCancel} variant="outline" size="icon-lg">

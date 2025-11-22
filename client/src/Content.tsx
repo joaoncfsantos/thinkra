@@ -190,7 +190,7 @@ function Content() {
       <div className="flex flex-col gap-8 md:flex-row">
         <div className="flex-1 space-y-6">
           <motion.div
-            className="flex items-center justify-between"
+            className="flex items-center justify-between flex-col sm:flex-row gap-4 sm:gap-0 text-center sm:text-left"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
@@ -199,13 +199,14 @@ function Content() {
               <h2 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
                 Good{" "}
                 {new Date().getHours() < 12
-                  ? "Morning"
+                  ? "Morning,"
                   : new Date().getHours() < 18
-                  ? "Afternoon"
-                  : "Evening"}
-                {user?.user_metadata?.name
-                  ? `, ${user.user_metadata.name}`
-                  : ""}
+                  ? "Afternoon,"
+                  : "Evening,"}
+                {" " +
+                  (user?.user_metadata?.name
+                    ? `${user.user_metadata.name}`
+                    : "")}
               </h2>
               <p className="mt-1 text-neutral-500 dark:text-neutral-400">
                 Here's your progress for today.
@@ -224,7 +225,7 @@ function Content() {
               <Button
                 onClick={() => setIsModalOpen(true)}
                 disabled={isCreatingEntry}
-                className="h-10 gap-2 rounded-full px-4"
+                className="h-10 gap-2 rounded-full px-4 hidden sm:flex"
               >
                 {isCreatingEntry ? (
                   <Spinner variant="circle" className="h-4 w-4" />
@@ -237,6 +238,21 @@ function Content() {
               </Button>
             </div>
           </motion.div>
+
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            disabled={isCreatingEntry}
+            className="h-10 gap-2 rounded-full px-4 fixed bottom-4 right-4 z-10 sm:hidden"
+          >
+            {isCreatingEntry ? (
+              <Spinner variant="circle" className="h-4 w-4" />
+            ) : (
+              <>
+                <NotebookPen className="h-4 w-4" />
+                <span>New Entry</span>
+              </>
+            )}
+          </Button>
 
           <div className="space-y-4">
             {isLoadingEntries ? (

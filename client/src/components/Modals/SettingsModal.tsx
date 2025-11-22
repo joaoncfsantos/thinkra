@@ -7,8 +7,6 @@ import {
 } from "@/components/ui/dialog";
 import { ModeToggle } from "../mode-toggle";
 import { Separator } from "../ui/separator";
-import { Button } from "../ui/button";
-import { RefreshCcw } from "lucide-react";
 
 interface SettingsModalProps {
   open: boolean;

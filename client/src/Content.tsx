@@ -159,11 +159,6 @@ function Content() {
     }
   };
 
-  const handleRefreshEntries = async () => {
-    window.location.reload();
-    resetViewport();
-  };
-
   if (loading) {
     return <></>;
   }
@@ -213,15 +208,6 @@ function Content() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => handleRefreshEntries()}
-                disabled={isCreatingEntry}
-                className="h-10 w-10 rounded-full"
-              >
-                <RefreshCcw className="h-4 w-4" />
-              </Button>
               <Button
                 onClick={() => setIsModalOpen(true)}
                 disabled={isCreatingEntry}

@@ -185,7 +185,7 @@ function Content() {
       <div className="flex flex-col gap-8 md:flex-row">
         <div className="flex-1 space-y-6">
           <motion.div
-            className="flex items-center justify-between flex-col sm:flex-row gap-4 sm:gap-0 text-center sm:text-left"
+            className="flex items-center justify-between flex-col sm:flex-row gap-0 text-center sm:text-left"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeInOut" }}

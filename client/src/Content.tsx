@@ -5,14 +5,13 @@ import { DeleteConfirmationModal } from "./components/Modals/Entries/DeleteConfi
 import LandingPage from "./LandingPage";
 
 import { Button } from "./components/ui/button";
-import { NotebookPen, RefreshCcw } from "lucide-react";
+import { NotebookPen } from "lucide-react";
 import { Spinner } from "./components/ui/shadcn-io/spinner";
 import Calendar from "./Calendar";
 
 import { toast } from "sonner";
 import { useAuth } from "./context/AuthContext";
 import { motion } from "motion/react";
-import { resetViewport } from "./utils/utils";
 import { useEntries } from "./hooks/useEntries";
 
 function Content() {

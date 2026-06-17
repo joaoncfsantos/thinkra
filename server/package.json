@@ -11,8 +11,7 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.3",
     "@types/multer": "^2.0.0",
-    "@types/node": "^24.8.0",
-    "tsx": "^4.20.6"
+    "@types/node": "^24.8.0"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.76.1",
@@ -20,6 +19,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "multer": "^2.0.2",
-    "openai": "^6.4.0"
+    "openai": "^6.4.0",
+    "tsx": "^4.20.6"
   }
 }

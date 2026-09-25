@@ -7,8 +7,20 @@ A speech-to-text daily journal. Talk out loud about your day for a few seconds a
 
 You can also skip the recording and type entries directly.
 
+## The idea behind it
+
+The name comes from *[The Gap and The Gain](https://www.thegapandthegain.com/)* by Dan Sullivan and Dr. Benjamin Hardy. Its core idea: when you measure yourself against an ideal or a goal (the **Gap**), you always feel behind, no matter how much you've actually done. When you instead measure yourself against where you started (the **Gain**), the same day looks like progress.
+
+Thinkra operationalizes that daily, in two parts:
+
+- **Gains** — what you actually did today, captured while it's fresh, so it isn't lost to hindsight the next time you're being hard on yourself.
+- **Goals** — the gap you're choosing to close next, framed forward instead of as a shortfall.
+
+The app has no formal affiliation with the book or its authors — it's an independent tool built around that framing.
+
 ## Table of contents
 
+- [The idea behind it](#the-idea-behind-it)
 - [Features](#features)
 - [Architecture](#architecture)
 - [Tech stack](#tech-stack)

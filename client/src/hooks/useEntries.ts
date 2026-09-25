@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "@/utils/supabase";
+import { isDemoMode } from "@/lib/demoMode";
+import { DEMO_ENTRIES } from "@/lib/demoData";
 import type { DailyEntry } from "../interfaces/DailyEntry";
 
 export const useEntries = () => {
@@ -11,20 +13,24 @@ export const useEntries = () => {
   const entriesQuery = useQuery({
     queryKey: ["daily-entries", user?.id],
     queryFn: async () => {
-      if (!user?.id) {
-        throw new Error("No user found");
+      if (isDemoMode) {
+        return DEMO_ENTRIES;
+      } else {
+        if (!user?.id) {
+          throw new Error("No user found");
+        }
+
+        const { data, error } = await supabase
+          .from("daily_entries")
+          .select("*")
+          .order("date", { ascending: false });
+
+        if (error) {
+          throw new Error(`Failed to fetch entries: ${error.message}`);
+        }
+
+        return data as DailyEntry[];
       }
-
-      const { data, error } = await supabase
-        .from("daily_entries")
-        .select("*")
-        .order("date", { ascending: false });
-
-      if (error) {
-        throw new Error(`Failed to fetch entries: ${error.message}`);
-      }
-
-      return data as DailyEntry[];
     },
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5,
@@ -43,24 +49,42 @@ export const useEntries = () => {
         ? new Date(formData.date).toISOString().split("T")[0]
         : formData.date;
 
-      const { data, error } = await supabase
-        .from("daily_entries")
-        .insert({
+      if (isDemoMode) {
+        return {
+          id: `demo-${Date.now()}`,
           date: dateString,
           goals: formData.goals,
           gains: formData.gains,
+          created_at: new Date().toISOString(),
           user_id: user.id,
-        })
-        .select()
-        .single();
+        } satisfies DailyEntry;
+      } else {
+        const { data, error } = await supabase
+          .from("daily_entries")
+          .insert({
+            date: dateString,
+            goals: formData.goals,
+            gains: formData.gains,
+            user_id: user.id,
+          })
+          .select()
+          .single();
 
-      if (error) {
-        throw new Error(`Failed to create entry: ${error.message}`);
+        if (error) {
+          throw new Error(`Failed to create entry: ${error.message}`);
+        }
+
+        return data;
       }
-
-      return data;
     },
-    onSuccess: () => {
+    onSuccess: (newEntry) => {
+      if (isDemoMode) {
+        queryClient.setQueryData<DailyEntry[]>(
+          ["daily-entries", user?.id],
+          (old) => [newEntry as DailyEntry, ...(old ?? [])]
+        );
+        return;
+      }
       queryClient.invalidateQueries({ queryKey: ["daily-entries"] });
     },
   });
@@ -68,16 +92,25 @@ export const useEntries = () => {
   // Delete entry mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("daily_entries")
-        .delete()
-        .eq("id", id);
+      if (!isDemoMode) {
+        const { error } = await supabase
+          .from("daily_entries")
+          .delete()
+          .eq("id", id);
 
-      if (error) {
-        throw new Error(`Failed to delete entry: ${error.message}`);
+        if (error) {
+          throw new Error(`Failed to delete entry: ${error.message}`);
+        }
       }
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
+      if (isDemoMode) {
+        queryClient.setQueryData<DailyEntry[]>(
+          ["daily-entries", user?.id],
+          (old) => old?.filter((entry) => entry.id !== id)
+        );
+        return;
+      }
       queryClient.invalidateQueries({ queryKey: ["daily-entries"] });
     },
   });
@@ -93,22 +126,26 @@ export const useEntries = () => {
       goals: string[];
       gains: string[];
     }) => {
-      const { data, error } = await supabase
-        .from("daily_entries")
-        .update({
-          goals,
-          gains,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", id)
-        .select()
-        .single();
+      if (isDemoMode) {
+        return { id, goals, gains, updated_at: new Date().toISOString() };
+      } else {
+        const { data, error } = await supabase
+          .from("daily_entries")
+          .update({
+            goals,
+            gains,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", id)
+          .select()
+          .single();
 
-      if (error) {
-        throw new Error(`Failed to update entry: ${error.message}`);
+        if (error) {
+          throw new Error(`Failed to update entry: ${error.message}`);
+        }
+
+        return data;
       }
-
-      return data;
     },
     onMutate: async (variables) => {
       await queryClient.cancelQueries({ queryKey: ["daily-entries"] });

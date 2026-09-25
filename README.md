@@ -1,9 +1,9 @@
-# Gap and Gain
+# Thinkra
 
 ![CI](https://github.com/joaoncfsantos/gap-and-gain/actions/workflows/ci.yml/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A speech-to-text daily journal. Talk out loud about your day for a few seconds and Gap and Gain transcribes it, uses AI to pull out the **gains** (what you accomplished) and **goals** (what you want to do next), and saves them as a structured entry you can browse by date.
+A speech-to-text daily journal. Talk out loud about your day for a few seconds and Thinkra transcribes it, uses AI to pull out the **gains** (what you accomplished) and **goals** (what you want to do next), and saves them as a structured entry you can browse by date.
 
 You can also skip the recording and type entries directly.
 

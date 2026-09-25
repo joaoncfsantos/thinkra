@@ -1,4 +1,4 @@
--- Gap and Gain: initial schema
+-- Thinkra: initial schema
 -- Run with `supabase db push` (Supabase CLI) or paste into the SQL editor
 -- of your Supabase project.
 

@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for your interest in improving Gap and Gain! This is a small personal project, so the process is intentionally lightweight.
+Thanks for your interest in improving Thinkra! This is a small personal project, so the process is intentionally lightweight.
 
 ## Getting set up
 

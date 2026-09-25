@@ -1,5 +1,5 @@
 {
-  "name": "gap-and-gain",
+  "name": "thinkra",
   "private": true,
   "description": "Convenience scripts for running the client and server together in development. See client/ and server/ for the actual apps.",
   "scripts": {

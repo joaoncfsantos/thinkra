@@ -21,11 +21,6 @@ export async function transcribeAudio(file: Express.Multer.File) {
       response_format: "text",
     });
 
-    // Clean up temp file
-    fs.unlink(file.path, (err) => {
-      if (err) console.error("Failed to delete temp file:", err.message);
-    });
-
     const text = transcription;
     const result = await extractGapsAndGains(text);
 
@@ -33,5 +28,10 @@ export async function transcribeAudio(file: Express.Multer.File) {
   } catch (error) {
     console.error("Transcription error:", error);
     throw error;
+  } finally {
+    // Always clean up the temp upload, even if transcription failed
+    fs.unlink(file.path, (err) => {
+      if (err) console.error("Failed to delete temp file:", err.message);
+    });
   }
 }

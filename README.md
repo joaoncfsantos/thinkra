@@ -1,129 +1,281 @@
-# Gap and Gain - Speech-to-Text Journal
+# Gap and Gain
 
-A speech-to-text application that helps you record daily **gains** (what you accomplished today) and set **goals** for the next day. Record your thoughts out loud and let AI transcribe and structure them automatically.
+![CI](https://github.com/joaoncfsantos/gap-and-gain/actions/workflows/ci.yml/badge.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## How It Works
+A speech-to-text daily journal. Talk out loud about your day for a few seconds and Gap and Gain transcribes it, uses AI to pull out the **gains** (what you accomplished) and **goals** (what you want to do next), and saves them as a structured entry you can browse by date.
 
-- **Frontend** (`client/`) — React + Vite app. Handles authentication and all journal entry CRUD directly against Supabase.
-- **Backend** (`server/`) — Express API used only for audio transcription: it receives a recording, transcribes it with OpenAI Whisper, and uses GPT to extract goals and gains.
+You can also skip the recording and type entries directly.
 
-## Tech Stack
+## Table of contents
 
-- **Frontend:** React 19, Vite, TypeScript, Tailwind CSS, shadcn/ui, TanStack Query
-- **Backend:** Node.js, Express 5, TypeScript (run via `tsx`)
-- **Auth & Database:** Supabase
-- **AI:** OpenAI Whisper (transcription) + GPT (goal/gain extraction)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Tech stack](#tech-stack)
+- [Project structure](#project-structure)
+- [Getting started](#getting-started)
+- [Environment variables](#environment-variables)
+- [Available scripts](#available-scripts)
+- [Deploying your own instance](#deploying-your-own-instance)
+- [Security notes](#security-notes)
+- [Roadmap / possible future work](#roadmap--possible-future-work)
+- [Contributing](#contributing)
+- [License](#license)
 
-## Prerequisites
+## Features
 
-- Node.js (v18 or higher)
-- An OpenAI API key
-- A Supabase project (URL + keys)
+- **Voice journaling** — record a short clip describing your day; it's transcribed with OpenAI Whisper and automatically split into goals and gains with GPT.
+- **Manual entries** — add or edit goals/gains as plain text, no microphone required.
+- **Per-day cards** — one card per date, each independently editable (add/remove individual goals or gains) or deletable, with optimistic UI updates.
+- **Calendar filter** — a monthly calendar highlights days that have entries and lets you filter the list down to one or more selected dates.
+- **Authentication** — email/password sign-up, sign-in, and forgot/reset-password flows via Supabase Auth. (Social login buttons for Apple/Facebook/Google exist in the UI but are currently disabled — see [Roadmap](#roadmap--possible-future-work).)
+- **Row-level data isolation** — every journal entry is scoped to its owner via Postgres Row-Level Security, enforced by Supabase regardless of which client hits the database.
+- **Light/dark theme** — toggle in Settings, persisted across sessions.
+- **Responsive UI** — usable on both desktop and mobile, including a full-screen recording overlay with a volume-reactive visualizer (stoppable by clicking or pressing spacebar).
 
-## Setup
+## Architecture
 
-1. Clone the repository
+The app is two pieces that talk to Supabase independently:
 
-   ```bash
-   git clone https://github.com/joaoncfsantos/gap-and-gain.git
-   cd gap-and-gain
-   ```
+```mermaid
+flowchart LR
+    subgraph Browser
+        C[React client]
+    end
+    subgraph Backend
+        S[Express server]
+    end
+    SB[(Supabase\nAuth + Postgres)]
+    AI[OpenAI\nWhisper + GPT]
 
-2. Install dependencies for both client and server
+    C -- "auth (sign up/in), journal CRUD" --> SB
+    C -- "1. POST /api/transcribe\n(audio + access token)" --> S
+    S -- "2. verify access token" --> SB
+    S -- "3. transcribe + extract" --> AI
+    S -- "4. { text, goals, gains }" --> C
+    C -- "5. insert entry" --> SB
+```
 
-   ```bash
-   # Install server dependencies
-   cd server
-   npm install
+**The client (`client/`) owns almost everything.** It's a React SPA that talks to Supabase directly using the Supabase JS client: signing in, signing up, reading/creating/updating/deleting journal entries — all of it goes straight from the browser to Supabase, protected by Row-Level Security policies (`auth.uid() = user_id`) rather than by an API layer.
 
-   # Install client dependencies
-   cd ../client
-   npm install
-   ```
+**The server (`server/`) does exactly one thing: transcription.** The only backend endpoint is `POST /api/transcribe`. The flow for a voice entry is:
 
-3. Set up the database
+1. The browser records audio (`MediaRecorder`) and sends it, along with the user's Supabase access token, to the Express server.
+2. The server verifies the token against Supabase (`supabase.auth.getUser`) — it never has its own login system, it just checks tokens issued by Supabase Auth.
+3. The audio is sent to OpenAI Whisper for transcription, then the transcript is sent to GPT (`gpt-4o-mini`) with a prompt that extracts goals/gains as structured JSON.
+4. The server returns `{ text, result: { goals, gains } }` to the client.
+5. The client then writes the resulting entry to Supabase itself (the server never touches the `daily_entries` table).
 
-   In your Supabase project, create a `daily_entries` table with the following columns and enable Row-Level Security (policies should restrict each user to their own rows via `auth.uid() = user_id`):
+A server is required only because the `OPENAI_API_KEY` must stay off the client — everything else could in principle run as a static site talking straight to Supabase.
 
-   | Column | Type | Notes |
-   |--------|------|-------|
-   | `id` | `uuid` | primary key, default `gen_random_uuid()` |
-   | `user_id` | `uuid` | foreign key → `auth.users.id` |
-   | `date` | `date` | |
-   | `goals` | `text[]` | default `'{}'` |
-   | `gains` | `text[]` | default `'{}'` |
-   | `created_at` | `timestamptz` | default `now()` |
-   | `updated_at` | `timestamptz` | nullable |
+### Data model
 
-4. Configure environment variables
+A single table, `daily_entries`, holds all journal data (see [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql)):
 
-   **Server** — create `server/.env`:
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | `uuid` | primary key, default `gen_random_uuid()` |
+| `user_id` | `uuid` | foreign key → `auth.users.id`, `on delete cascade` |
+| `date` | `date` | the journal date this entry belongs to |
+| `goals` | `text[]` | default `'{}'` |
+| `gains` | `text[]` | default `'{}'` |
+| `created_at` | `timestamptz` | default `now()` |
+| `updated_at` | `timestamptz` | nullable, set on edit |
 
-   ```bash
-   cd server
-   cp .env.example .env
-   ```
+Row-Level Security is enabled with one policy per operation (select/insert/update/delete), each requiring `auth.uid() = user_id`.
 
-   ```env
-   OPENAI_API_KEY=your_openai_api_key
-   PORT=3000
-   VITE_SUPABASE_URL=https://your-project-ref.supabase.co
-   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-   # CORS_ORIGIN=http://localhost:5173
-   ```
+## Tech stack
 
-   **Client** — create `client/.env.local`:
+- **Frontend:** React 19, Vite (rolldown-vite), TypeScript, Tailwind CSS, shadcn/ui (Radix primitives), TanStack Query, React Router, `motion` for animation
+- **Backend:** Node.js, Express 5, TypeScript (run via `tsx`, no build step needed in dev)
+- **Auth & Database:** Supabase (Postgres + Auth + Row-Level Security)
+- **AI:** OpenAI Whisper (`whisper-1`) for transcription, GPT (`gpt-4o-mini`) for goal/gain extraction
 
-   ```env
-   VITE_SUPABASE_URL=https://your-project-ref.supabase.co
-   VITE_SUPABASE_ANON_KEY=your_anon_or_publishable_key
-   VITE_API_URL=http://localhost:3000
-   ```
+## Project structure
 
-5. Run the application
+```
+gap-and-gain/
+├── client/                  # React + Vite frontend
+│   └── src/
+│       ├── components/      # UI components, modals, shadcn/ui primitives
+│       ├── context/         # AuthContext (Supabase session state)
+│       ├── hooks/           # useEntries (TanStack Query CRUD hooks)
+│       ├── interfaces/      # Shared TS types
+│       └── utils/           # Supabase client, misc helpers
+├── server/                  # Express backend (transcription only)
+│   ├── routes/               # /api/transcribe
+│   ├── middleware/           # Supabase token auth middleware
+│   ├── services/             # OpenAI calls (transcription + extraction)
+│   └── utils/                 # Supabase (service role) + OpenAI clients
+├── supabase/
+│   └── migrations/           # SQL schema + RLS policies
+└── .github/workflows/        # CI (lint, build, typecheck)
+```
 
-   ```bash
-   # Terminal 1 - Start the server (auto-reloads on changes)
-   cd server
-   npm run dev
+## Getting started
 
-   # Terminal 2 - Start the client
-   cd client
-   npm run dev
-   ```
+### Prerequisites
 
-6. Open your browser to `http://localhost:5173`
+- Node.js v20 or higher
+- An [OpenAI API key](https://platform.openai.com/api-keys)
+- A [Supabase](https://supabase.com) project (free tier is enough)
 
-## Environment Variables
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/joaoncfsantos/gap-and-gain.git
+cd gap-and-gain
+```
+
+### 2. Install dependencies
+
+From the repo root, this installs both `client/` and `server/` dependencies:
+
+```bash
+npm run install:all
+```
+
+(Or install each separately with `npm install --prefix client` / `npm install --prefix server`.)
+
+### 3. Set up the database
+
+In your Supabase project, run the migration in [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql). Either:
+
+- Paste its contents into the Supabase Dashboard's SQL Editor and run it, or
+- Use the [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started): `supabase link --project-ref <your-project-ref>` then `supabase db push`.
+
+This creates the `daily_entries` table with Row-Level Security policies already configured.
+
+### 4. Configure environment variables
+
+**Server** — `server/.env` (copy from `server/.env.example`):
+
+```bash
+cp server/.env.example server/.env
+```
+
+```env
+OPENAI_API_KEY=your_openai_api_key
+PORT=3000
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+CORS_ORIGIN=http://localhost:5173
+```
+
+**Client** — `client/.env.local` (copy from `client/.env.example`):
+
+```bash
+cp client/.env.example client/.env.local
+```
+
+```env
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your_anon_or_publishable_key
+VITE_API_URL=http://localhost:3000
+```
+
+### 5. Run it
+
+From the repo root, this starts both the server and the client together:
+
+```bash
+npm run dev
+```
+
+(Or in two terminals: `npm run dev:server` and `npm run dev:client`.)
+
+### 6. Open the app
+
+Visit `http://localhost:5173`, sign up for an account, and start recording.
+
+## Environment variables
 
 ### Server (`server/.env`)
 
-- `OPENAI_API_KEY` — Your OpenAI API key (required for transcription)
-- `PORT` — Server port (default: `3000`)
-- `VITE_SUPABASE_URL` — Your Supabase project URL (required)
-- `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key, used to verify user tokens (required)
-- `CORS_ORIGIN` — Allowed origin for CORS (defaults to `http://localhost:5173`)
+| Variable | Required | Description |
+|---|---|---|
+| `OPENAI_API_KEY` | Yes | Used for both Whisper transcription and GPT extraction. |
+| `PORT` | No | Server port. Defaults to `3000`. |
+| `VITE_SUPABASE_URL` | Yes | Your Supabase project URL. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Used only to verify user access tokens server-side. **Never expose this to the client** — it bypasses Row-Level Security. |
+| `CORS_ORIGIN` | No | Origin allowed to call the API. Defaults to `http://localhost:5173`. Set this to your deployed client's URL in production. |
 
 ### Client (`client/.env.local`)
 
-- `VITE_SUPABASE_URL` — Your Supabase project URL (required)
-- `VITE_SUPABASE_ANON_KEY` — Supabase anon / publishable key (required)
-- `VITE_API_URL` — Base URL of the backend server (e.g. `http://localhost:3000`)
+| Variable | Required | Description |
+|---|---|---|
+| `VITE_SUPABASE_URL` | Yes | Your Supabase project URL. |
+| `VITE_SUPABASE_ANON_KEY` | Yes | Supabase anon/publishable key — safe to expose, access is enforced by Row-Level Security. |
+| `VITE_API_URL` | Yes | Base URL of the backend server (e.g. `http://localhost:3000` locally, or your deployed server's URL). |
 
-## Available Scripts
+## Available scripts
 
-### Server (`server/`)
+### Root (`/`)
 
-- `npm run dev` — Start the server with auto-reload (`tsx watch`)
-- `npm start` — Start the server without watching
+| Script | Description |
+|---|---|
+| `npm run install:all` | Installs dependencies for both `client/` and `server/`. |
+| `npm run dev` | Runs the client and server dev servers together. |
+| `npm run dev:client` / `npm run dev:server` | Runs just one of them. |
+| `npm run build` | Builds the client for production. |
+| `npm run lint` | Lints the client. |
+| `npm run typecheck` | Type-checks the server. |
 
 ### Client (`client/`)
 
-- `npm run dev` — Start the Vite dev server
-- `npm run build` — Type-check and build for production
-- `npm run preview` — Preview the production build
-- `npm run lint` — Run ESLint
+| Script | Description |
+|---|---|
+| `npm run dev` | Start the Vite dev server. |
+| `npm run build` | Type-check and build for production. |
+| `npm run preview` | Preview the production build locally. |
+| `npm run lint` | Run ESLint. |
 
-## Security Note
+### Server (`server/`)
 
-⚠️ **Never commit your `.env` files!** They contain sensitive API keys. The `SUPABASE_SERVICE_ROLE_KEY` in particular bypasses Row-Level Security and must be kept secret and server-side only.
+| Script | Description |
+|---|---|
+| `npm run dev` | Start the server with auto-reload (`tsx watch`). |
+| `npm start` | Start the server without watching. |
+| `npm run typecheck` | Type-check without emitting (`tsc --noEmit`). |
+
+## Deploying your own instance
+
+There's no deployment automation in this repo — it's meant to be cloned and deployed with whatever platform you prefer. A couple of pointers:
+
+- **Client** (`client/`) builds to static files (`npm run build` → `client/dist/`), so it can be hosted anywhere that serves static sites: Vercel, Netlify, Cloudflare Pages, GitHub Pages, etc. Set the client's environment variables (see above) in that platform's dashboard.
+- **Server** (`server/`) is a plain Node/Express process (`npm start`, or `tsx server.ts`), so it needs a platform that runs long-lived Node processes: Railway, Render, Fly.io, a VPS, etc. Set the server's environment variables there, and set `CORS_ORIGIN` to your deployed client's URL.
+- **Database** is Supabase itself — no separate database deployment needed.
+
+Whichever platforms you pick, deploy the server first so you have its URL for `VITE_API_URL` on the client.
+
+## Security notes
+
+⚠️ **Never commit your `.env` / `.env.local` files** — they contain live API keys and are already covered by `.gitignore`.
+
+- `SUPABASE_SERVICE_ROLE_KEY` bypasses Row-Level Security and must stay server-side only. It's used exclusively to validate user tokens (`supabase.auth.getUser`) — the server never uses it to read or write journal data directly.
+- `OPENAI_API_KEY` is billed per use; the `/api/transcribe` endpoint requires a valid Supabase session, and uploads are capped at 24MB, but there's no additional rate limiting — see [Roadmap](#roadmap--possible-future-work).
+- All journal data access is enforced at the database level via Row-Level Security, so even a bug in client code can't leak one user's entries to another.
+- Found a vulnerability? Please see [SECURITY.md](SECURITY.md) rather than opening a public issue.
+
+## Roadmap / possible future work
+
+Ideas for anyone looking to extend this project, roughly in order of how much value they'd add:
+
+- **Automated tests** — there's currently no test suite. `vitest` (client) and `vitest`/`node --test` (server) would fit the existing tooling; a good starting point is auth-guard behavior on `/api/transcribe` and the goal/gain extraction prompt.
+- **Rate limiting** on `/api/transcribe` — currently anyone with a valid session can call it as often as they like, which is a real cost risk given it calls paid OpenAI endpoints.
+- **Enable social login** — the Apple/Facebook/Google buttons already exist in the UI (`SocialMediaAuth.tsx`) but are disabled; wiring them up just needs OAuth provider configuration in the Supabase dashboard.
+- **Account deletion / data export** — no self-service way to delete an account or export your entries yet.
+- **Streaks & stats** — a habit-tracking app like this is a natural fit for a "current streak" or "entries this month" view.
+- **CSV/PDF export** of journal history.
+- **Offline support / PWA** — useful for a voice-journaling app people reach for on the go.
+- **Editable extraction** — the AI-extracted goals/gains land straight in the entry; a quick review/edit step before saving (instead of only after) could catch bad transcriptions sooner.
+- **Multi-language transcription** — Whisper supports many languages already; the GPT extraction prompt and UI copy are currently English-only.
+- **CI test coverage** — once tests exist, wire them into `.github/workflows/ci.yml` alongside the existing lint/build/typecheck jobs.
+
+## Contributing
+
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for how to get set up and the expected workflow.
+
+## License
+
+[MIT](LICENSE)

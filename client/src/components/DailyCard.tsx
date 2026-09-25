@@ -45,7 +45,7 @@ export function DailyCard({
         setEditableGains(cleanGains);
         setIsEditing(false);
         setErrors({});
-      } catch (error) {
+      } catch {
         toast.error("Failed to save changes. Please try again.");
         // Keep editing mode active so user can retry
       } finally {

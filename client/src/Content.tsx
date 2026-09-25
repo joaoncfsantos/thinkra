@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useAuth } from "./context/AuthContext";
 import { motion } from "motion/react";
 import { useEntries } from "./hooks/useEntries";
+import { isDemoMode } from "@/lib/demoMode";
 
 function Content() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -34,6 +35,12 @@ function Content() {
   } = useEntries();
 
   const handleAudioSubmission = async (audioBlob: Blob) => {
+    if (isDemoMode) {
+      toast.error("Voice transcription isn't available in the demo.");
+      setIsModalOpen(false);
+      return;
+    }
+
     const audioUrl = URL.createObjectURL(audioBlob);
     if (audioRef.current) {
       audioRef.current.src = audioUrl;

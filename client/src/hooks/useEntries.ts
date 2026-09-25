@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "@/utils/supabase";
+import { isDemoMode } from "@/lib/demoMode";
+import { DEMO_ENTRIES } from "@/lib/demoData";
 import type { DailyEntry } from "../interfaces/DailyEntry";
 
 export const useEntries = () => {
@@ -11,6 +13,10 @@ export const useEntries = () => {
   const entriesQuery = useQuery({
     queryKey: ["daily-entries", user?.id],
     queryFn: async () => {
+      if (isDemoMode) {
+        return DEMO_ENTRIES;
+      }
+
       if (!user?.id) {
         throw new Error("No user found");
       }
@@ -43,6 +49,17 @@ export const useEntries = () => {
         ? new Date(formData.date).toISOString().split("T")[0]
         : formData.date;
 
+      if (isDemoMode) {
+        return {
+          id: `demo-${Date.now()}`,
+          date: dateString,
+          goals: formData.goals,
+          gains: formData.gains,
+          created_at: new Date().toISOString(),
+          user_id: user.id,
+        } satisfies DailyEntry;
+      }
+
       const { data, error } = await supabase
         .from("daily_entries")
         .insert({
@@ -60,7 +77,14 @@ export const useEntries = () => {
 
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (newEntry) => {
+      if (isDemoMode) {
+        queryClient.setQueryData<DailyEntry[]>(
+          ["daily-entries", user?.id],
+          (old) => [newEntry as DailyEntry, ...(old ?? [])]
+        );
+        return;
+      }
       queryClient.invalidateQueries({ queryKey: ["daily-entries"] });
     },
   });
@@ -68,6 +92,8 @@ export const useEntries = () => {
   // Delete entry mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
+      if (isDemoMode) return;
+
       const { error } = await supabase
         .from("daily_entries")
         .delete()
@@ -77,7 +103,14 @@ export const useEntries = () => {
         throw new Error(`Failed to delete entry: ${error.message}`);
       }
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
+      if (isDemoMode) {
+        queryClient.setQueryData<DailyEntry[]>(
+          ["daily-entries", user?.id],
+          (old) => old?.filter((entry) => entry.id !== id)
+        );
+        return;
+      }
       queryClient.invalidateQueries({ queryKey: ["daily-entries"] });
     },
   });
@@ -93,6 +126,10 @@ export const useEntries = () => {
       goals: string[];
       gains: string[];
     }) => {
+      if (isDemoMode) {
+        return { id, goals, gains, updated_at: new Date().toISOString() };
+      }
+
       const { data, error } = await supabase
         .from("daily_entries")
         .update({

@@ -19,5 +19,10 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // Context providers and shadcn/ui components intentionally co-locate a
+      // hook/variants export next to the component they belong to.
+      "react-refresh/only-export-components": "warn",
+    },
   },
 ])

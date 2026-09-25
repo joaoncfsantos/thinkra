@@ -127,7 +127,9 @@ export function AudioRecorder({
   // Setup audio context and analyser
   const setupAudioAnalysis = async (stream: MediaStream): Promise<void> => {
     const AudioContextClass =
-      window.AudioContext || (window as any).webkitAudioContext;
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext })
+        .webkitAudioContext;
 
     refs.audioContext.current = new AudioContextClass();
 
@@ -233,6 +235,21 @@ export function AudioRecorder({
       startRecording();
     }
   };
+
+  // Let the user stop recording by pressing spacebar (see the overlay hint)
+  useEffect(() => {
+    if (!isRecording) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.code === "Space") {
+        event.preventDefault();
+        stopRecording();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isRecording]);
 
   // Cleanup on unmount
   useEffect(() => {

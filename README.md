@@ -184,7 +184,12 @@ cp client/.env.example client/.env.local
 VITE_SUPABASE_URL=https://your-project-ref.supabase.co
 VITE_SUPABASE_ANON_KEY=your_anon_or_publishable_key
 VITE_API_URL=http://localhost:3000
+VITE_DEMO_MODE=false
 ```
+
+> Demo mode is on by default (no Supabase project or server needed) so the
+> app can be deployed and explored with mock data. Set `VITE_DEMO_MODE=false`
+> to use your real Supabase/OpenAI backend, as above.
 
 ### 5. Run it
 

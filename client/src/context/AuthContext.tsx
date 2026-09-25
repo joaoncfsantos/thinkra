@@ -25,93 +25,93 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(!isDemoMode);
 
   useEffect(() => {
-    if (isDemoMode) return;
+    if (!isDemoMode) {
+      // Get initial session
+      supabase.auth
+        .getSession()
+        .then(({ data: { session } }) => {
+          setSession(session);
+          setUser(session?.user ?? null);
+        })
+        .catch((err) => {
+          console.error("Failed to load session:", err);
+        })
+        .finally(() => setLoading(false));
 
-    // Get initial session
-    supabase.auth
-      .getSession()
-      .then(({ data: { session } }) => {
+      // Listen for auth changes
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-      })
-      .catch((err) => {
-        console.error("Failed to load session:", err);
-      })
-      .finally(() => setLoading(false));
+        setLoading(false);
+      });
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+      return () => subscription.unsubscribe();
+    }
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    if (isDemoMode) return;
+    if (!isDemoMode) {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+      if (error) throw error;
 
-    if (error) throw error;
-
-    setUser(data.user);
-    setSession(data.session);
+      setUser(data.user);
+      setSession(data.session);
+    }
   };
 
   const signOut = async () => {
-    if (isDemoMode) return;
+    if (!isDemoMode) {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
 
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-
-    setUser(null);
-    setSession(null);
+      setUser(null);
+      setSession(null);
+    }
   };
 
   const signUp = async (name: string, email: string, password: string) => {
-    if (isDemoMode) return;
-
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          name, // Store name in user metadata
+    if (!isDemoMode) {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name, // Store name in user metadata
+          },
         },
-      },
-    });
+      });
 
-    if (error) throw error;
+      if (error) throw error;
 
-    setUser(data.user);
-    setSession(data.session);
+      setUser(data.user);
+      setSession(data.session);
+    }
   };
 
   const forgotPassword = async (email: string) => {
-    if (isDemoMode) return;
+    if (!isDemoMode) {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-
-    if (error) throw error;
+      if (error) throw error;
+    }
   };
 
   const resetPassword = async (password: string) => {
-    if (isDemoMode) return;
+    if (!isDemoMode) {
+      const { error } = await supabase.auth.updateUser({
+        password,
+      });
 
-    const { error } = await supabase.auth.updateUser({
-      password,
-    });
-
-    if (error) throw error;
+      if (error) throw error;
+    }
   };
 
   return (
